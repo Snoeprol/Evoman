@@ -125,7 +125,6 @@ class Environment(object):
         self.load_sprites()
 
 
-
     def load_sprites(self):
 
         # loads enemy and map

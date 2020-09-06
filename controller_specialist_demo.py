@@ -8,7 +8,7 @@
 
 # imports framework
 import sys, os
-sys.path.insert(0, 'evoman')
+x = sys.path.insert(0, 'evoman')
 from environment import Environment
 from demo_controller import player_controller
 
@@ -26,7 +26,7 @@ n_hidden_neurons = 0
 env = Environment(experiment_name=experiment_name,
 				  playermode="ai",
 				  player_controller=player_controller(n_hidden_neurons),
-			  	  speed="normal",
+			  	  speed="fastest",
 				  enemymode="static",
 				  level=2)
 
@@ -35,7 +35,7 @@ env = Environment(experiment_name=experiment_name,
 for en in range(1, 9):
 
 	#Update the enemy
-	env.update_parameter('enemies',[en])
+	env.update_parameter('enemies',[en]) 
 
 	# Load specialist controller
 	sol = np.loadtxt('solutions_demo/demo_'+str(en)+'.txt')
