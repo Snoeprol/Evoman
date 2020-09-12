@@ -140,7 +140,7 @@ def simulation(env,x):
 
 def main():
     #env = environment.Environment(experiment_name = 'Test123', timeexpire = 1000)
-    hidden = 10
+    hidden = 30
 
     env = Environment(experiment_name="test123",
 				  playermode="ai",
@@ -151,8 +151,8 @@ def main():
     n_vars = (env.get_num_sensors()+1)*hidden + (hidden + 1)*5           
     max_fitness_per_gen = []
     average = []
-    population = initiate_population(40,n_vars, -1, 1)
-    generations = 20
+    population = initiate_population(10,n_vars, -1, 1)
+    generations = 50
     #env.play(population[0])
     evaluate_population(env, population)
 
@@ -163,7 +163,7 @@ def main():
         print('New generation of degenerates eradicated.')
         print(max(fitness_list))
         average.append(sum(fitness_list))
-        
+
     print(max_fitness_per_gen)
     plt.plot(average)
     plt.show()
