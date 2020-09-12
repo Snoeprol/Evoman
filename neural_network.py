@@ -1,30 +1,5 @@
-'''
-from tensorflow import keras
-from keras import models
-'''
 import numpy as np
 import time
-'''
-class Controller():
-
-    def __init__(self, nodes = 10,layers = 2):
-        model = keras.models.Sequential()
-        model.add(keras.Input(shape=(20,)))
-        for i in range(layers):
-            model.add(keras.layers.Dense(nodes, activation='relu'))
-        # Now the model will take as input arr
-        # and output arrays of shape (None, 3ays of shape (None, 16)2).
-        # Note that after the first layer, you don't need to specify
-        # the size of the input anymore:
-        model.add(keras.layers.Dense(5))
-        print(model.output_shape)
-        def control(self, inputs):
-
-            inputs = (inputs-min(inputs))/float((max(inputs)-min(inputs)))
-
-
-            return []
-'''
 #controller = Controller()
 
 hidden = 10
@@ -58,15 +33,21 @@ def softmax(X):
 def forward(input,params, neurons_per_layer, layers):
     ''' Neural network: input types: list, np.array, int, int
     returns the output given the weight size params: layers ( hidden * ( 1 + input)) + hidden * (output + 1)'''
+
+
     signal_length = len(input)
     start = 0
     finish = signal_length * neurons_per_layer
+    
+    # First layer
     A =  np.reshape(params[start:finish], (neurons_per_layer, signal_length))
     input = np.dot(A, input)
     start = finish
     finish += hidden
     input += params[start:finish]
     input = relu(input)
+
+    # Middle layers
     for layer in range(layers - 1):
         finish = start + neurons_per_layer * neurons_per_layer
 
@@ -77,6 +58,8 @@ def forward(input,params, neurons_per_layer, layers):
         input = relu(input)
         start = finish + neurons_per_layer
         finish = neurons_per_layer * neurons_per_layer
+
+    # Last layer
     output_size = 5
     size = neurons_per_layer * output_size
     y = params[start:(start + size)]
@@ -84,8 +67,8 @@ def forward(input,params, neurons_per_layer, layers):
     input = np.dot(input, A) 
     input += np.array(params[start + size:start + size + output_size])
     input = softmax(input)
-    output = input
-    return output
+
+    return input
 
 forward(input, params, hidden, layers)
 
