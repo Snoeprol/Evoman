@@ -13,9 +13,17 @@ def initiate_population(size, variables, min_weight, max_weight):
     ''' Initiate a population of individuals with variables amount of parameters unfiformly 
     chosen between min_weight and max_weight'''
     population = []
+    alphas = []
+
+    # random values between the standard deviation of a uniform distribution between [-1, 1]
+    stddevs = [1/np.sqrt(6)] * size
+
+    for _ in range(int(size * (size - 1) / 2)):
+        alphas.append(np.random.uniform(-np.pi, np.pi))
     for _ in range(size):
         population.append(np.random.rand(variables) * (max_weight - min_weight) +  min_weight)
-    return np.array(population)
+
+    return np.array([population, stddevs, alphas])
 
 def generate_individual(variables, min_weight, max_weight):
     '''Returns individual of the population with variables amount of parameters uniformly chosen
@@ -141,23 +149,23 @@ def simulation(env,x):
 def main():
     #env = environment.Environment(experiment_name = 'Test123', timeexpire = 1000)
     hidden = 30
-
+    population_size = 10
+    generations = 50
     env = Environment(experiment_name="test123",
 				  playermode="ai",
 				  player_controller=player_controller(hidden),
 			  	  speed="fastest",
 				  enemymode="static",
 				  level=1)
+
     n_vars = (env.get_num_sensors()+1)*hidden + (hidden + 1)*5           
     max_fitness_per_gen = []
     average = []
-    population = initiate_population(10,n_vars, -1, 1)
-    generations = 50
-    #env.play(population[0])
-    evaluate_population(env, population)
+    population = initiate_population(population_size,n_vars, -1, 1)
+    
 
     for _ in range(generations):
-        fitness_list = evaluate_population(env, population)
+        fitness_list = evaluate_population(env, population[0])
         generate_next_generation(population, fitness_list)
         max_fitness_per_gen.append(max(fitness_list))
         print('New generation of degenerates eradicated.')
