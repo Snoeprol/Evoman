@@ -56,6 +56,34 @@ def select_individuals_fitness(fitness_list, portion):
     a higher chance to die.'''
 
     total = calculate_fitness(fitness_list)
+	
+def select_tournament(fitness_list, tour_size):
+    
+    '''Takes fitness of the population, chooses 
+    tour_size individuals at random
+    and returns the index of the best individual'''
+    #randomly select indexes of individuals
+    chosen_indexes = [np.random.randint(0, len(fitness_list)) for iter in range(tour_size)]
+    # gets fitness of chosen individuals
+    chosen_population = fitness_list[chosen_indexes]
+    # returns an index of the best individual from chosen individuals
+    max_individual = np.argmax(chosen_population)
+    # returns an index of the selected individuals from the whole population
+    return chosen_indexes[max_individual]
+
+
+def select_ranking(fitness_list, s):
+    ''' Ranks individuals according to its fitness and assigns a probability to
+    an individual index according to its place in the ranking
+    
+    s controls the selection aggressiveness towards the best individual: 1<s<2
+    '''
+    # returns ranking of individuals (starting from 0)
+    ranking = sp.rankdata(fitness_list) - 1
+    # calculates probabilities for individuals based on eq. in page 82
+    probabilities = [(2-s)/len(ranking) + (2*indiv*(s-1))/(len(ranking)*(len(ranking) - 1)) for indiv in ranking]
+    # returns an index of randomly chosen individual based on probabilities provided
+    return np.random.choice(len(fitness_list), p=probabilities) 
     
 
 def calculate_fitness(fitness_list):
