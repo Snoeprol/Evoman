@@ -2,6 +2,7 @@ import sys
 sys.path.insert(0, 'evoman')
 from environment import Environment
 import numpy as np
+import scipy.stats as sp
 import random
 from demo_controller import player_controller
 import matplotlib.pyplot as plt
