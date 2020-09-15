@@ -41,6 +41,25 @@ def check_and_alter_boundaries(ind1):
                 ind1[0][i] = -1
             if ind1[0][i] > 1:
                 ind1[0][i] = 1
+		
+def Blend_Crossover(ind1, ind2):
+    """
+    Blend two genomes to two offsprings
+    Code taken from:
+    https://github.com/DEAP/deap/blob/master/deap/tools/crossover.py
+    """
+    
+    #create kids
+    #add a counter and two genomes to each other
+    for position_genome, (mixed_tuple_1, mixed_tuple_2) in enumerate(zip(ind1, ind2)):
+        #add random factor for exploration
+        beta = (1. + 2. * ALPHA) * random.random() - ALPHA
+        #add genomes to kids
+        ind1[position_genome] = (1. - beta) * mixed_tuple_1 + beta * mixed_tuple_2
+        ind2[position_genome] = beta * mixed_tuple_1 + (1 - beta) * mixed_tuple_2
+
+
+    return ind1, ind2
     
     if (min(ind1[2]) < - math.pi) or (max(ind1[2]) > math.pi):
         for i in range(ind1[2]):
