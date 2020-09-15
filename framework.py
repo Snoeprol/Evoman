@@ -32,6 +32,33 @@ def generate_individual(variables, min_weight, max_weight):
     individual = np.random.rand(variables) * (max_weight - min_weight) +  min_weight
     return individual
 
+def check_and_alter_boundaries(ind1):
+    #check if all the weight values are between -1, 1
+    if (min(ind1[0]) < -1) or (max(ind1[0]) > 1):
+        #not the case, change the values to max allowed value
+        for i in range(ind1[0]):
+            if ind1[0][i] < -1:
+                ind1[0][i] = -1
+            if ind1[0][i] > 1:
+                ind1[0][i] = 1
+    
+    if (min(ind1[2]) < - math.pi) or (max(ind1[2]) > math.pi):
+        for i in range(ind1[2]):
+            if ind1[2][i] < -math.pi:
+                ind1[2][i] = -math.pi
+            if ind1[2][i] > math.pi:
+                ind1[2][i] = math.pi
+                
+    if (min(ind1[3]) < - math.pi) or (max(ind1[3]) > math.pi):
+        for i in range(ind1[3]):
+            if ind1[3][i] < -math.pi:
+                ind1[3][i] = -math.pi
+            if ind1[3][i] > math.pi:
+                ind1[3][i] = math.pi
+                
+    return ind1
+
+
 def replace_portion_random(percentage, fitness_list, population, min_weight, max_weight):
     '''Replaces the worst portion of the population with randomly initialized individuals'''
     replaced = int(percentage * len(fitness_list) / 100)
