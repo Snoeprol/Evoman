@@ -59,7 +59,7 @@ def check_and_alter_boundaries(ind1):
                 ind1[0][i] = -1
             if ind1[0][i] > 1:
                 ind1[0][i] = 1
-		
+        
 def Blend_Crossover(ind1, ind2):
     """
     Blend two genomes to two offsprings
@@ -121,7 +121,7 @@ def select_individuals_fitness(fitness_list, portion):
     a higher chance to die.'''
 
     total = calculate_fitness(fitness_list)
-	
+    
 def select_tournament(fitness_list, tour_size):
     
     '''Takes fitness of the population, chooses 
@@ -246,11 +246,11 @@ def main():
     generations = 2
 
     env = Environment(experiment_name="test123",
-				  playermode="ai",
-				  player_controller=player_controller(hidden),
-			  	  speed="fastest",
-				  enemymode="static",
-				  level=2)
+                  playermode="ai",
+                  player_controller=player_controller(hidden),
+                  speed="fastest",
+                  enemymode="static",
+                  level=2)
 
     n_vars = (env.get_num_sensors()+1)*hidden + (hidden + 1)*5
     print(n_vars)           
