@@ -218,6 +218,12 @@ def generate_next_generation(population, fitness_list):
     crossover_population(population, fitness_list, 100 - replacement_percentage)
     mutate_population(population, fitness_list)
 
+
+    indv_index_1 = select_tournament(fitness_list, 2)
+    indv_index_2 = select_tournament(fitness_list, 2)
+    offspring_1, offspring_2 = Blend_Crossover(pop[indv_index_1], pop[indv_index_2])
+    	
+	
 def evaluate_population(env, population):
     return np.array(list(map(lambda individual: simulation(env,individual), population)))
 
@@ -244,7 +250,7 @@ def main():
     
 
     for _ in range(generations):
-        
+
         fitness_list = evaluate_population(env, population[0])
         generate_next_generation(population, fitness_list)
         max_fitness_per_gen.append(max(fitness_list))
