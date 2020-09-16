@@ -6,6 +6,7 @@ import scipy.stats as sp
 import random
 from demo_controller import player_controller
 import matplotlib.pyplot as plt
+import math
 
 min_weight = -1
 max_weight = 1
@@ -41,7 +42,23 @@ def check_and_alter_boundaries(ind1):
                 ind1[0][i] = -1
             if ind1[0][i] > 1:
                 ind1[0][i] = 1
-		
+    
+    if (min(ind1[2]) < - math.pi) or (max(ind1[2]) > math.pi):
+        for i in range(ind1[2]):
+            if ind1[2][i] < -math.pi:
+                ind1[2][i] = -math.pi
+            if ind1[2][i] > math.pi:
+                ind1[2][i] = math.pi
+                
+    if (min(ind1[3]) < - math.pi) or (max(ind1[3]) > math.pi):
+        for i in range(ind1[3]):
+            if ind1[3][i] < -math.pi:
+                ind1[3][i] = -math.pi
+            if ind1[3][i] > math.pi:
+                ind1[3][i] = math.pi
+                
+    return ind1
+
 def Blend_Crossover(ind1, ind2):
     """
     Blend two genomes to two offsprings
@@ -60,23 +77,6 @@ def Blend_Crossover(ind1, ind2):
 
 
     return ind1, ind2
-    
-    if (min(ind1[2]) < - math.pi) or (max(ind1[2]) > math.pi):
-        for i in range(ind1[2]):
-            if ind1[2][i] < -math.pi:
-                ind1[2][i] = -math.pi
-            if ind1[2][i] > math.pi:
-                ind1[2][i] = math.pi
-                
-    if (min(ind1[3]) < - math.pi) or (max(ind1[3]) > math.pi):
-        for i in range(ind1[3]):
-            if ind1[3][i] < -math.pi:
-                ind1[3][i] = -math.pi
-            if ind1[3][i] > math.pi:
-                ind1[3][i] = math.pi
-                
-    return ind1
-
 
 def replace_portion_random(percentage, fitness_list, population, min_weight, max_weight):
     '''Replaces the worst portion of the population with randomly initialized individuals'''
@@ -209,6 +209,10 @@ def mutate_individual(individual):
                 trait = max_weight 
 
 def generate_next_generation(population, fitness_list):
+
+    parents = select_tournament(fitness_list, 2)
+
+
     replacement_percentage = 20
     replace_portion_random(20, fitness_list, population, min_weight, max_weight)
     crossover_population(population, fitness_list, 100 - replacement_percentage)
@@ -240,6 +244,7 @@ def main():
     
 
     for _ in range(generations):
+        
         fitness_list = evaluate_population(env, population[0])
         generate_next_generation(population, fitness_list)
         max_fitness_per_gen.append(max(fitness_list))

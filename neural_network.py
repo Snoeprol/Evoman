@@ -30,45 +30,50 @@ def softmax(X):
     expo_sum = np.sum(np.exp(X))
     return expo/expo_sum
 
-def forward(input,params, neurons_per_layer, layers):
-    ''' Neural network: input types: list, np.array, int, int
-    returns the output given the weight size params: layers ( hidden * ( 1 + input)) + hidden * (output + 1)'''
+class Controller():
+
+    @staticmethod
+    def forward(input,params, neurons_per_layer, layers):
+        ''' Neural network: input types: list, np.array, int, int
+        returns the output given the weight size params: layers ( hidden * ( 1 + input)) + hidden * (output + 1)'''
 
 
-    signal_length = len(input)
-    start = 0
-    finish = signal_length * neurons_per_layer
-    
-    # First layer
-    A =  np.reshape(params[start:finish], (neurons_per_layer, signal_length))
-    input = np.dot(A, input)
-    start = finish
-    finish += hidden
-    input += params[start:finish]
-    input = relu(input)
-
-    # Middle layers
-    for layer in range(layers - 1):
-        finish = start + neurons_per_layer * neurons_per_layer
-
-        # Define matrix
-        A =  np.reshape(params[start:finish], (neurons_per_layer, neurons_per_layer))
+        signal_length = len(input)
+        start = 0
+        finish = signal_length * neurons_per_layer
+        
+        # First layer
+        A =  np.reshape(params[start:finish], (neurons_per_layer, signal_length))
         input = np.dot(A, input)
-        input += np.array(params[finish:finish + neurons_per_layer])
+        start = finish
+        finish += hidden
+        input += params[start:finish]
         input = relu(input)
-        start = finish + neurons_per_layer
-        finish = neurons_per_layer * neurons_per_layer
 
-    # Last layer
-    output_size = 5
-    size = neurons_per_layer * output_size
-    y = params[start:(start + size)]
-    A = np.reshape(params[start:start + size], (neurons_per_layer, output_size))
-    input = np.dot(input, A) 
-    input += np.array(params[start + size:start + size + output_size])
-    input = softmax(input)
+        # Middle layers
+        for layer in range(layers - 1):
+            finish = start + neurons_per_layer * neurons_per_layer
 
-    return input
+            # Define matrix
+            A =  np.reshape(params[start:finish], (neurons_per_layer, neurons_per_layer))
+            input = np.dot(A, input)
+            input += np.array(params[finish:finish + neurons_per_layer])
+            input = relu(input)
+            start = finish + neurons_per_layer
+            finish = neurons_per_layer * neurons_per_layer
 
-forward(input, params, hidden, layers)
+        # Last layer
+        output_size = 5
+        size = neurons_per_layer * output_size
+        y = params[start:(start + size)]
+        A = np.reshape(params[start:start + size], (neurons_per_layer, output_size))
+        input = np.dot(input, A) 
+        input += np.array(params[start + size:start + size + output_size])
+        input = softmax(input)
+        
+        output = []
+        x = max(input)
+        return input
+
+print(Controller.forward(input, params, hidden, layers))
 
