@@ -38,7 +38,6 @@ def generate_covariance_matrix(st_devs, angles):
                     angle_index = int(index_2 * (index - 1) / 2)
                     
                 covariance_matrix[index][index_2] =(st_devs[index] ** 2 - st_devs[index_2] ** 2) /2 * np.tan(2 * angles[angle_index])
-    print(covariance_matrix)
     return covariance_matrix
 
 

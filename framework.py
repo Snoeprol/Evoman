@@ -7,7 +7,7 @@ import random
 from demo_controller import player_controller
 import matplotlib.pyplot as plt
 from covariance import mutate 
-
+import math
 # os.putenv('SDL_VIDEODRIVER', 'fbcon')
 # os.environ["SDL_VIDEODRIVER"] = "dummy"
 
@@ -27,6 +27,24 @@ class Individual:
     def mutate_self(self):
         mutate(self)
 
+    def check_and_alter_boundaries(self):
+        #check if all the weight values are between -1, 1
+        if (min(self.weights) < -1) or (max(self.weights) > 1):
+            #not the case, change the values to max allowed value
+            for i in self.weights:
+                if i < -1:
+                    i = -1
+                if i > 1:
+                    i = 1
+        
+        
+        if (min(self.alphas) < - math.pi) or (max(self.alphas) > math.pi):
+            for i in self.alphas:
+                if i < -math.pi:
+                    i = -math.pi
+                if i > math.pi:
+                    i = math.pi
+
 def initiate_population(size, variables, min_weight, max_weight):
     ''' Initiate a population of individuals with variables amount of parameters unfiformly 
     chosen between min_weight and max_weight'''
@@ -44,83 +62,38 @@ def initiate_population(size, variables, min_weight, max_weight):
     return population
 
 
-def generate_individual(variables, min_weight, max_weight):
-    '''Returns individual of the population with variables amount of parameters uniformly chosen
-    between min_weight and max_weight'''
-    individual = np.random.rand(variables) * (max_weight - min_weight) +  min_weight
-    return individual
 
-def check_and_alter_boundaries(ind1):
-    #check if all the weight values are between -1, 1
-    if (min(ind1[0]) < -1) or (max(ind1[0]) > 1):
-        #not the case, change the values to max allowed value
-        for i in range(ind1[0]):
-            if ind1[0][i] < -1:
-                ind1[0][i] = -1
-            if ind1[0][i] > 1:
-                ind1[0][i] = 1
-        
-def Blend_Crossover(ind1, ind2):
+def blend_crossover(ind1, ind2):
     """
     Blend two genomes to two offsprings
     Code taken from:
     https://github.com/DEAP/deap/blob/master/deap/tools/crossover.py
     """
+
+    ind1_list = [ind1.weights, ind1.stddevs, ind1.alphas]
+    ind2_list = [ind2.weights, ind2.stddevs, ind2.alphas]
     
-    #create kids
-    #add a counter and two genomes to each other
-    for position_genome, (mixed_tuple_1, mixed_tuple_2) in enumerate(zip(ind1, ind2)):
+    for position_genome, (mixed_tuple_1, mixed_tuple_2) in enumerate(zip(ind1_list, ind2_list)):
         #add random factor for exploration
         beta = (1. + 2. * ALPHA) * random.random() - ALPHA
         #add genomes to kids
-        ind1[position_genome] = (1. - beta) * mixed_tuple_1 + beta * mixed_tuple_2
-        ind2[position_genome] = beta * mixed_tuple_1 + (1 - beta) * mixed_tuple_2
+        ind1_list[position_genome] = (1. - beta) * mixed_tuple_1 + beta * mixed_tuple_2
+        ind2_list[position_genome] = beta * mixed_tuple_1 + (1 - beta) * mixed_tuple_2
 
+    ind1.weights = ind1_list[0]
+    ind1.stddevs = ind1_list[1]
+    ind1.alphas = ind1_list[2]
+    
+    ind2.weights = ind2_list[0]
+    ind2.stddevs = ind2_list[1]
+    ind2.alphas = ind2_list[2]
 
     return ind1, ind2
-    
-    if (min(ind1[2]) < - math.pi) or (max(ind1[2]) > math.pi):
-        for i in range(ind1[2]):
-            if ind1[2][i] < -math.pi:
-                ind1[2][i] = -math.pi
-            if ind1[2][i] > math.pi:
-                ind1[2][i] = math.pi
-                
-    if (min(ind1[3]) < - math.pi) or (max(ind1[3]) > math.pi):
-        for i in range(ind1[3]):
-            if ind1[3][i] < -math.pi:
-                ind1[3][i] = -math.pi
-            if ind1[3][i] > math.pi:
-                ind1[3][i] = math.pi
-                
-    return ind1
-
-
-def replace_portion_random(percentage, fitness_list, population, min_weight, max_weight):
-    '''Replaces the worst portion of the population with randomly initialized individuals'''
-    replaced = int(percentage * len(fitness_list) / 100)
-    worst_indices = select_worst(fitness_list, replaced)
-    for i in worst_indices:
-        population[i] = generate_individual(len(population[i]), min_weight, max_weight)
-
-def generate_test_fitness(individuals):
-    '''Generate a list of random fitnesses to test'''
-    return np.random.rand(individuals)
-
-    
-def select_worst(fitness_list, n):
-    '''Return indices of n worst individuals'''
-    return fitness_list.argsort()[:n]
 
 def select_best(fitness_list, n):
     '''Returns indices of n best individuals'''
     return (-fitness_list).argsort()[:n]
 
-def select_individuals_fitness(fitness_list, portion):
-    '''Selects individuals, giving individuals with a lower fitness
-    a higher chance to die.'''
-
-    total = calculate_fitness(fitness_list)
     
 def select_tournament(fitness_list, tour_size):
     
@@ -160,90 +133,21 @@ def calculate_fitness(fitness_list):
     
     return total_fitness
 
-def crossover_population(population, fitness_list, percentage):
-    '''Generates k-point crossover in population with certain pentage of the population
-    letting the fittest pairs create children''' 
-    individuals = percentage * len(population) / 100
-    individuals = int(individuals) if ((int(individuals) % 2) == 0) else int(individuals) + 1
-    best_indices = select_best(fitness_list, individuals)
-
-    # Let the best pair create new individuals
-    for i, value in enumerate(best_indices):
-        if i % 2 == 0:
-            k_point_crossover(population[i], population[i + 1])
-
-def k_point_crossover(parent_1, parent_2):
-    '''Given 2 individuals, creates 2 children with k_point crossover,
-    where k is picked from an absolute normal distribution with average of 0 
-    (set to 1 if actually 0) and st. dev. amount of traits / 5'''
-    traits = len(parent_1)
-    k = abs(np.random.normal(0, traits/ float(5)))
-    if k > traits:
-        k = traits
-    if k < 1:
-        k = 1
-    k = int(k)
-    
-    crossover_points = random.sample(range(1, traits), k)
-    crossover_points.append(traits) 
-    crossover_points.sort()
-
-    child_1 = np.array([])
-    child_2 = np.array([])
-    i = 0
-    for index, j in enumerate(crossover_points):
-        if index % 2 == 0:
-            child_1 = np.concatenate((child_1, parent_1[i:j]))
-            child_2 = np.concatenate((child_2, parent_2[i:j]))
-        else:
-            child_1 = np.concatenate((child_1, parent_2[i:j]))
-            child_2 = np.concatenate((child_2, parent_1[i:j]))
-        i = j
-    
-    parent_1 = child_1
-    parent_2 = child_2
-
-    return child_1, child_2
-
-
-def mutate_population(population, fitness_list):
-    for individual in population:
-        mutate_individual(individual)
-
-def mutate_individual(individual):
-    '''Given an individual, generates on average 1 mutation in a trait
-    with a st. dev. of 1 from a normal distribution'''
-    matuation_chance = 1 - 1/len(individual)
-    for trait in individual:
-        if np.random.rand() > matuation_chance:
-            mutation_size = np.random.normal(0, 1)
-            # Boundaries
-            if min_weight < trait + mutation_size < max_weight:
-                trait = trait + mutation_size
-            
-            elif trait + mutation_size < min_weight:
-                trait = min_weight
-            else:
-                trait = max_weight 
-
-def generate_next_generation(population, fitness_list):
-    replacement_percentage = 20
-    replace_portion_random(20, fitness_list, population, min_weight, max_weight)
-    crossover_population(population, fitness_list, 100 - replacement_percentage)
-    mutate_population(population, fitness_list)
-
-def evaluate_population(env, population):
-    return np.array(list(map(lambda individual: simulation(env,individual), population)))
 
 def simulation(env,x):
     f,p,e,t = env.play(x)
     return f
 
 def main():
+    global tau, tau_2, beta, ALPHA
+    ALPHA = 0.5
+    tau = 0.0001
+    tau_2 = 0.00001
+    beta = 5/ 360 * 2 * np.pi
     #env = environment.Environment(experiment_name = 'Test123', timeexpire = 1000)
     hidden = 10
-    population_size = 10
-    generations = 2
+    population_size = 6
+    generations = 5
 
     env = Environment(experiment_name="test123",
                   playermode="ai",
@@ -256,24 +160,31 @@ def main():
     print(n_vars)           
     max_fitness_per_gen = []
     average = []
-    population = initiate_population(population_size,n_vars, -1, 1)
+    pop = initiate_population(population_size,n_vars, -1, 1)
 
-
-    print(population[0].weights[0])
-    population[0].mutate_self()
-    print(population[0].weights[0])
     for _ in range(generations):
-        for individual in population:
+
+        for individual in pop:
             individual.evaluate(env)
 
-        fitness_list = np.array([individual.fitness for individual in population])
+        fitness_list = np.array([individual.fitness for individual in pop])
 
-        for individual in population:
+        new_pop = []
+        for _ in range(population_size // 2):
+            parent_index_1 = select_tournament(fitness_list, 2)
+            parent_index_2 = select_tournament(fitness_list, 2)
+            ind1, ind2 = blend_crossover(pop[parent_index_1], pop[parent_index_2])
+            ind1.check_and_alter_boundaries()
+            ind2.check_and_alter_boundaries()
+            
+            new_pop.extend([ind1, ind2])
+
+        for individual in new_pop:
             individual.mutate_self()
-
-
-        generate_next_generation(population, fitness_list)
-        max_fitness_per_gen.append(max(fitness_list))
+            individual.check_and_alter_boundaries()
+    
+        pop = new_pop
+        print(len(new_pop))
         print('New generation of degenerates eradicated.')
         print(max(fitness_list))
         average.append(sum(fitness_list))
