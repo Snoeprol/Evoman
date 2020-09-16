@@ -62,55 +62,13 @@ def initiate_population(size, variables, min_weight, max_weight):
     return population
 
 
-<<<<<<< HEAD
 
 def blend_crossover(ind1, ind2):
-=======
-def generate_individual(variables, min_weight, max_weight):
-    '''Returns individual of the population with variables amount of parameters uniformly chosen
-    between min_weight and max_weight'''
-    individual = np.random.rand(variables) * (max_weight - min_weight) +  min_weight
-    return individual
-
-def check_and_alter_boundaries(ind1):
-    #check if all the weight values are between -1, 1
-    if (min(ind1[0]) < -1) or (max(ind1[0]) > 1):
-        #not the case, change the values to max allowed value
-        for i in range(ind1[0]):
-            if ind1[0][i] < -1:
-                ind1[0][i] = -1
-            if ind1[0][i] > 1:
-                ind1[0][i] = 1
-                
-     if (min(ind1[2]) < - math.pi) or (max(ind1[2]) > math.pi):
-        for i in range(ind1[2]):
-            if ind1[2][i] < -math.pi:
-                ind1[2][i] = -math.pi
-            if ind1[2][i] > math.pi:
-                ind1[2][i] = math.pi
-                
-    if (min(ind1[3]) < - math.pi) or (max(ind1[3]) > math.pi):
-        for i in range(ind1[3]):
-            if ind1[3][i] < -math.pi:
-                ind1[3][i] = -math.pi
-            if ind1[3][i] > math.pi:
-                ind1[3][i] = math.pi
-                
-    return ind1
-
-        
-def Blend_Crossover(ind1, ind2):
->>>>>>> ad609c53c5df15b01b9702f7a61003ea76ff2993
     """
     Blend two genomes to two offsprings
     Code taken from:
     https://github.com/DEAP/deap/blob/master/deap/tools/crossover.py
     """
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> ad609c53c5df15b01b9702f7a61003ea76ff2993
     ind1_list = [ind1.weights, ind1.stddevs, ind1.alphas]
     ind2_list = [ind2.weights, ind2.stddevs, ind2.alphas]
     
@@ -128,24 +86,6 @@ def Blend_Crossover(ind1, ind2):
     ind2.weights = ind2_list[0]
     ind2.stddevs = ind2_list[1]
     ind2.alphas = ind2_list[2]
-<<<<<<< HEAD
-=======
-
-    return ind1, ind2
-    
-    
-
-def replace_portion_random(percentage, fitness_list, population, min_weight, max_weight):
-    '''Replaces the worst portion of the population with randomly initialized individuals'''
-    replaced = int(percentage * len(fitness_list) / 100)
-    worst_indices = select_worst(fitness_list, replaced)
-    for i in worst_indices:
-        population[i] = generate_individual(len(population[i]), min_weight, max_weight)
-
-def generate_test_fitness(individuals):
-    '''Generate a list of random fitnesses to test'''
-    return np.random.rand(individuals)
->>>>>>> ad609c53c5df15b01b9702f7a61003ea76ff2993
 
     return ind1, ind2
 
