@@ -241,7 +241,7 @@ def simulation(env,x):
 
 def main():
     #env = environment.Environment(experiment_name = 'Test123', timeexpire = 1000)
-    hidden = 0
+    hidden = 10
     population_size = 10
     generations = 2
 
@@ -264,7 +264,7 @@ def main():
     print(population[0].weights[0])
     for _ in range(generations):
         for individual in population:
-            individual.evaluate()
+            individual.evaluate(env)
 
         fitness_list = np.array([individual.fitness for individual in population])
 
