@@ -6,26 +6,43 @@ import scipy.stats as sp
 import random
 from demo_controller import player_controller
 import matplotlib.pyplot as plt
-import math
+from covariance import mutate 
+
+# os.putenv('SDL_VIDEODRIVER', 'fbcon')
+# os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 min_weight = -1
 max_weight = 1
+
+class Individual:
+    def __init__(self, weights, stddevs, alphas):
+        self.weights = weights
+        self.stddevs = stddevs 
+        self.alphas = alphas 
+        self.fitness = 0
+
+    def evaluate(self, env):
+        self.fitness = simulation(env, self.weights)
+
+    def mutate_self(self):
+        mutate(self)
 
 def initiate_population(size, variables, min_weight, max_weight):
     ''' Initiate a population of individuals with variables amount of parameters unfiformly 
     chosen between min_weight and max_weight'''
     population = []
-    alphas = []
 
-    # random values between the standard deviation of a uniform distribution between [-1, 1]
-    stddevs = [1/np.sqrt(6)] * size
+    stddevs = [2/np.sqrt(12)] * variables
 
-    for _ in range(int(size * (size - 1) / 2)):
-        alphas.append(np.random.uniform(-np.pi, np.pi))
     for _ in range(size):
-        population.append(np.random.rand(variables) * (max_weight - min_weight) +  min_weight)
+        weights = np.random.rand(variables) * (max_weight - min_weight) +  min_weight
+        alphas_indiv = []
+        for _ in range(int(variables * (variables - 1) / 2)):
+            alphas_indiv.append(np.random.uniform(-np.pi, np.pi))
+        population.append(Individual(weights, np.array(stddevs), np.array(alphas_indiv)))
 
-    return np.array([population, stddevs, alphas])
+    return population
+
 
 def generate_individual(variables, min_weight, max_weight):
     '''Returns individual of the population with variables amount of parameters uniformly chosen
@@ -42,23 +59,7 @@ def check_and_alter_boundaries(ind1):
                 ind1[0][i] = -1
             if ind1[0][i] > 1:
                 ind1[0][i] = 1
-    
-    if (min(ind1[2]) < - math.pi) or (max(ind1[2]) > math.pi):
-        for i in range(ind1[2]):
-            if ind1[2][i] < -math.pi:
-                ind1[2][i] = -math.pi
-            if ind1[2][i] > math.pi:
-                ind1[2][i] = math.pi
-                
-    if (min(ind1[3]) < - math.pi) or (max(ind1[3]) > math.pi):
-        for i in range(ind1[3]):
-            if ind1[3][i] < -math.pi:
-                ind1[3][i] = -math.pi
-            if ind1[3][i] > math.pi:
-                ind1[3][i] = math.pi
-                
-    return ind1
-
+        
 def Blend_Crossover(ind1, ind2):
     """
     Blend two genomes to two offsprings
@@ -77,6 +78,23 @@ def Blend_Crossover(ind1, ind2):
 
 
     return ind1, ind2
+    
+    if (min(ind1[2]) < - math.pi) or (max(ind1[2]) > math.pi):
+        for i in range(ind1[2]):
+            if ind1[2][i] < -math.pi:
+                ind1[2][i] = -math.pi
+            if ind1[2][i] > math.pi:
+                ind1[2][i] = math.pi
+                
+    if (min(ind1[3]) < - math.pi) or (max(ind1[3]) > math.pi):
+        for i in range(ind1[3]):
+            if ind1[3][i] < -math.pi:
+                ind1[3][i] = -math.pi
+            if ind1[3][i] > math.pi:
+                ind1[3][i] = math.pi
+                
+    return ind1
+
 
 def replace_portion_random(percentage, fitness_list, population, min_weight, max_weight):
     '''Replaces the worst portion of the population with randomly initialized individuals'''
@@ -103,7 +121,7 @@ def select_individuals_fitness(fitness_list, portion):
     a higher chance to die.'''
 
     total = calculate_fitness(fitness_list)
-	
+    
 def select_tournament(fitness_list, tour_size):
     
     '''Takes fitness of the population, chooses 
@@ -209,21 +227,11 @@ def mutate_individual(individual):
                 trait = max_weight 
 
 def generate_next_generation(population, fitness_list):
-
-    parents = select_tournament(fitness_list, 2)
-
-
     replacement_percentage = 20
     replace_portion_random(20, fitness_list, population, min_weight, max_weight)
     crossover_population(population, fitness_list, 100 - replacement_percentage)
     mutate_population(population, fitness_list)
 
-
-    indv_index_1 = select_tournament(fitness_list, 2)
-    indv_index_2 = select_tournament(fitness_list, 2)
-    offspring_1, offspring_2 = Blend_Crossover(pop[indv_index_1], pop[indv_index_2])
-    	
-	
 def evaluate_population(env, population):
     return np.array(list(map(lambda individual: simulation(env,individual), population)))
 
@@ -233,25 +241,37 @@ def simulation(env,x):
 
 def main():
     #env = environment.Environment(experiment_name = 'Test123', timeexpire = 1000)
-    hidden = 30
+    hidden = 0
     population_size = 10
-    generations = 50
-    env = Environment(experiment_name="test123",
-				  playermode="ai",
-				  player_controller=player_controller(hidden),
-			  	  speed="fastest",
-				  enemymode="static",
-				  level=1)
+    generations = 2
 
-    n_vars = (env.get_num_sensors()+1)*hidden + (hidden + 1)*5           
+    env = Environment(experiment_name="test123",
+                  playermode="ai",
+                  player_controller=player_controller(hidden),
+                  speed="fastest",
+                  enemymode="static",
+                  level=2)
+
+    n_vars = (env.get_num_sensors()+1)*hidden + (hidden + 1)*5
+    print(n_vars)           
     max_fitness_per_gen = []
     average = []
     population = initiate_population(population_size,n_vars, -1, 1)
-    
 
+
+    print(population[0].weights[0])
+    population[0].mutate_self()
+    print(population[0].weights[0])
     for _ in range(generations):
+        for individual in population:
+            individual.evaluate()
 
-        fitness_list = evaluate_population(env, population[0])
+        fitness_list = np.array([individual.fitness for individual in population])
+
+        for individual in population:
+            individual.mutate_self()
+
+
         generate_next_generation(population, fitness_list)
         max_fitness_per_gen.append(max(fitness_list))
         print('New generation of degenerates eradicated.')
