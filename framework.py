@@ -1,4 +1,4 @@
-import sys
+import sys, os
 sys.path.insert(0, 'evoman')
 from environment import Environment
 import numpy as np
@@ -8,17 +8,17 @@ from demo_controller import player_controller
 import matplotlib.pyplot as plt
 from covariance import mutate 
 import math
-# os.putenv('SDL_VIDEODRIVER', 'fbcon')
-# os.environ["SDL_VIDEODRIVER"] = "dummy"
+
+os.putenv('SDL_VIDEODRIVER', 'fbcon')
+os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 min_weight = -1
 max_weight = 1
 
 class Individual:
-    def __init__(self, weights, stddevs, alphas):
+    def __init__(self, weights, stddevs):
         self.weights = weights
         self.stddevs = stddevs 
-        self.alphas = alphas 
         self.fitness = 0
 
     def evaluate(self, env):
@@ -29,21 +29,16 @@ class Individual:
 
     def check_and_alter_boundaries(self):
         #check if all the weight values are between -1, 1
+        self.weights[0] = -2
         if (min(self.weights) < -1) or (max(self.weights) > 1):
             #not the case, change the values to max allowed value
-            for i in self.weights:
-                if i < -1:
-                    i = -1
-                if i > 1:
-                    i = 1
-        
-        
-        if (min(self.alphas) < - math.pi) or (max(self.alphas) > math.pi):
-            for i in self.alphas:
-                if i < -math.pi:
-                    i = -math.pi
-                if i > math.pi:
-                    i = math.pi
+            
+            for i in range(len(self.weights)):
+                if self.weights[i] < -1:
+                    self.weights[i] = -1
+                if self.weights[i] > 1:
+                    self.weights[i] = 1
+        print(self.weights[0])
 
 def initiate_population(size, variables, min_weight, max_weight):
     ''' Initiate a population of individuals with variables amount of parameters unfiformly 
@@ -54,10 +49,9 @@ def initiate_population(size, variables, min_weight, max_weight):
 
     for _ in range(size):
         weights = np.random.rand(variables) * (max_weight - min_weight) +  min_weight
-        alphas_indiv = []
-        for _ in range(int(variables * (variables - 1) / 2)):
-            alphas_indiv.append(np.random.uniform(-np.pi, np.pi))
-        population.append(Individual(weights, np.array(stddevs), np.array(alphas_indiv)))
+        weights_1 = np.random.uniform(min_weight, max_weight, variables)
+  
+        population.append(Individual(weights, np.array(stddevs)))
 
     return population
 
@@ -81,11 +75,9 @@ def blend_crossover(ind1, ind2):
 
     ind1.weights = ind1_list[0]
     ind1.stddevs = ind1_list[1]
-    ind1.alphas = ind1_list[2]
     
     ind2.weights = ind2_list[0]
     ind2.stddevs = ind2_list[1]
-    ind2.alphas = ind2_list[2]
 
     return ind1, ind2
 
@@ -145,12 +137,13 @@ def main():
     beta = 5/ 360 * 2 * np.pi
     #env = environment.Environment(experiment_name = 'Test123', timeexpire = 1000)
     hidden = 10
-    population_size = 6
+    population_size = 100
     generations = 5
 
     env = Environment(experiment_name="test123",
                   playermode="ai",
                   player_controller=player_controller(hidden),
+                  enemies = [2],
                   speed="fastest",
                   enemymode="static",
                   level=2)
@@ -183,7 +176,7 @@ def main():
             individual.check_and_alter_boundaries()
     
         pop = new_pop
-        print(len(new_pop))
+
         print('New generation of degenerates eradicated.')
         print(max(fitness_list))
         average.append(sum(fitness_list))
