@@ -63,8 +63,8 @@ def blend_crossover(ind1, ind2):
     Code taken from:
     https://github.com/DEAP/deap/blob/master/deap/tools/crossover.py
     """
-    ind1_list = [ind1.weights, ind1.stddevs, ind1.alphas]
-    ind2_list = [ind2.weights, ind2.stddevs, ind2.alphas]
+    ind1_list = [ind1.weights, ind1.stddevs]
+    ind2_list = [ind2.weights, ind2.stddevs]
     
     for position_genome, (mixed_tuple_1, mixed_tuple_2) in enumerate(zip(ind1_list, ind2_list)):
         #add random factor for exploration
@@ -136,7 +136,7 @@ def main():
     tau_2 = 0.00001
     beta = 5/ 360 * 2 * np.pi
     hidden = 10
-    population_size = 100
+    population_size = 40
     generations = 5
 
     env = Environment(experiment_name="test123",
@@ -147,12 +147,10 @@ def main():
                   enemymode="static",
                   level=2)
 
-    n_vars = (env.get_num_sensors()+1)*hidden + (hidden + 1)*5
-    print(n_vars)           
+    n_vars = (env.get_num_sensors()+1)*hidden + (hidden + 1)*5        
     max_fitness_per_gen = []
     average = []
     pop = initiate_population(population_size,n_vars, -1, 1)
-
 
     for _ in range(generations):
 
