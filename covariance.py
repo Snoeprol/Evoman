@@ -1,10 +1,6 @@
 import numpy as np
 from numpy.random import multivariate_normal
 
-tau_2 = 0.01
-tau = 0.01
-beta = 0.001
-
 def mutate(individual):
     '''Assumes individual of the form   individual.weights = weights/ biases
                                         individual.stddevs = standard devs'''
