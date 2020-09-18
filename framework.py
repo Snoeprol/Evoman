@@ -45,6 +45,8 @@ class Individual:
                 if i > math.pi:
                     i = math.pi
 
+
+
 def initiate_population(size, variables, min_weight, max_weight):
     ''' Initiate a population of individuals with variables amount of parameters unfiformly 
     chosen between min_weight and max_weight'''
@@ -137,7 +139,7 @@ def simulation(env,x):
     f,p,e,t = env.play(x)
     return f
 
-def main():
+if __name__ == '__main__':
     global tau, tau_2, beta, ALPHA
     ALPHA = 0.5
     tau = 0.0001
@@ -145,15 +147,25 @@ def main():
     beta = 5/ 360 * 2 * np.pi
     #env = environment.Environment(experiment_name = 'Test123', timeexpire = 1000)
     hidden = 10
-    population_size = 6
+    population_size = 2
     generations = 5
-
+    '''
     env = Environment(experiment_name="test123",
                   playermode="ai",
                   player_controller=player_controller(hidden),
                   speed="fastest",
                   enemymode="static",
                   level=2)
+    '''
+    environments = []
+    for i in range(population_size):
+        env = Environment(experiment_name="test123",
+                playermode="ai",
+                player_controller=player_controller(hidden),
+                speed="fastest",
+                enemymode="static",
+                level=2)
+        environments.append(env)
 
     n_vars = (env.get_num_sensors()+1)*hidden + (hidden + 1)*5
     print(n_vars)           
@@ -165,6 +177,7 @@ def main():
 
         for individual in pop:
             individual.evaluate(env)
+
 
         fitness_list = np.array([individual.fitness for individual in pop])
 
@@ -192,4 +205,3 @@ def main():
     plt.plot(average)
     plt.show()
 
-main()
