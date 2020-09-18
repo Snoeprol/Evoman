@@ -135,7 +135,6 @@ def main():
     tau = 0.0001
     tau_2 = 0.00001
     beta = 5/ 360 * 2 * np.pi
-    #env = environment.Environment(experiment_name = 'Test123', timeexpire = 1000)
     hidden = 10
     population_size = 100
     generations = 5
@@ -153,6 +152,7 @@ def main():
     max_fitness_per_gen = []
     average = []
     pop = initiate_population(population_size,n_vars, -1, 1)
+
 
     for _ in range(generations):
 
