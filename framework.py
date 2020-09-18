@@ -29,7 +29,6 @@ class Individual:
 
     def check_and_alter_boundaries(self):
         #check if all the weight values are between -1, 1
-        self.weights[0] = -2
         if (min(self.weights) < -1) or (max(self.weights) > 1):
             #not the case, change the values to max allowed value
             
@@ -38,7 +37,7 @@ class Individual:
                     self.weights[i] = -1
                 if self.weights[i] > 1:
                     self.weights[i] = 1
-        print(self.weights[0])
+
 
 def initiate_population(size, variables, min_weight, max_weight):
     ''' Initiate a population of individuals with variables amount of parameters unfiformly 
@@ -98,6 +97,7 @@ def select_tournament(fitness_list, tour_size):
     # returns an index of the best individual from chosen individuals
     max_individual = np.argmax(chosen_population)
     # returns an index of the selected individuals from the whole population
+    # print(max_individual, chosen_indexes[max_individual], "tour")
     return chosen_indexes[max_individual]
 
 
@@ -132,12 +132,11 @@ def simulation(env,x):
 def main():
     global tau, tau_2, beta, ALPHA
     ALPHA = 0.5
-    tau = 0.0001
-    tau_2 = 0.00001
+    
     beta = 5/ 360 * 2 * np.pi
-    hidden = 10
-    population_size = 40
-    generations = 5
+    hidden = 1
+    population_size = 100
+    generations = 20
 
     env = Environment(experiment_name="test123",
                   playermode="ai",
@@ -152,6 +151,7 @@ def main():
     average = []
     pop = initiate_population(population_size,n_vars, -1, 1)
 
+    stats_per_gen = []
     for _ in range(generations):
 
         for individual in pop:
@@ -163,6 +163,7 @@ def main():
         for _ in range(population_size // 2):
             parent_index_1 = select_tournament(fitness_list, 2)
             parent_index_2 = select_tournament(fitness_list, 2)
+            # print(parent_index_1, parent_index_2, pop[parent_index_1].fitness, pop[parent_index_2].fitness, "test")
             ind1, ind2 = blend_crossover(pop[parent_index_1], pop[parent_index_2])
             ind1.check_and_alter_boundaries()
             ind2.check_and_alter_boundaries()
@@ -170,15 +171,20 @@ def main():
             new_pop.extend([ind1, ind2])
 
         for individual in new_pop:
+
             individual.mutate_self()
             individual.check_and_alter_boundaries()
-    
+
         pop = new_pop
 
-        print('New generation of degenerates eradicated.')
-        print(max(fitness_list))
-        average.append(sum(fitness_list))
 
+        print('New generation of degenerates eradicated.')
+        max_fitness_per_gen.append(max(fitness_list))
+        average.append(np.mean(fitness_list))
+        stats_per_gen.append([np.mean(fitness_list), np.max(fitness_list), np.min(fitness_list)])
+
+    for i in range(len(stats_per_gen)):
+        print("GEN {}, max = {:.2f}, min = {:.2f}, mean = {:.2f}".format(i, stats_per_gen[i][1], stats_per_gen[i][2], stats_per_gen[i][0]))
     print(max_fitness_per_gen)
     plt.plot(average)
     plt.show()
