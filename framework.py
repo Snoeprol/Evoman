@@ -25,18 +25,19 @@ class Individual:
         self.fitness = simulation(env, self.weights)
 
     def mutate_self(self):
-        mutate(self)
+        mutate(self, tau, tau_2)
 
     def check_and_alter_boundaries(self):
-        #check if all the weight values are between -1, 1
-        if (min(self.weights) < -1) or (max(self.weights) > 1):
-            #not the case, change the values to max allowed value
             
-            for i in range(len(self.weights)):
-                if self.weights[i] < -1:
-                    self.weights[i] = -1
-                if self.weights[i] > 1:
-                    self.weights[i] = 1
+        for i in range(len(self.weights)):
+            if self.weights[i] < -1:
+                self.weights[i] = -1
+            if self.weights[i] > 1:
+                self.weights[i] = 1
+        
+        for i in range(len(self.stddevs)):
+            if self.stddevs[i] < stddev_lim:
+                self.stddevs[i] == stddev_lim
 
 
 def initiate_population(size, variables, min_weight, max_weight):
@@ -44,8 +45,8 @@ def initiate_population(size, variables, min_weight, max_weight):
     chosen between min_weight and max_weight'''
     population = []
 
-    stddevs = [2/np.sqrt(12)] * variables
-
+    #stddevs = [2/np.sqrt(12)] * variables
+    stddevs = [stddev_lim] * variables 
     for _ in range(size):
         weights = np.random.rand(variables) * (max_weight - min_weight) +  min_weight
         weights_1 = np.random.uniform(min_weight, max_weight, variables)
@@ -129,14 +130,16 @@ def simulation(env,x):
     f,p,e,t = env.play(x)
     return f
 
-def main():
-    global tau, tau_2, beta, ALPHA
-    ALPHA = 0.5
-    
-    beta = 5/ 360 * 2 * np.pi
+if __name__ ==  '__main__':
+    global tau, tau_2, beta, stddev_lim, ALPHA
     hidden = 1
-    population_size = 100
+    population_size = 5
     generations = 20
+    ALPHA = 0.5
+    tau = 1/np.sqrt(2 * population_size)
+    tau_2 = 1/np.sqrt(np.sqrt(population_size))
+    stddev_lim = 0.05
+    #beta = 5/ 360 * 2 * np.pi
 
     env = Environment(experiment_name="test123",
                   playermode="ai",
@@ -188,5 +191,3 @@ def main():
     print(max_fitness_per_gen)
     plt.plot(average)
     plt.show()
-
-main()
