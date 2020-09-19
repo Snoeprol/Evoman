@@ -8,6 +8,7 @@ from demo_controller import player_controller
 import matplotlib.pyplot as plt
 from covariance import mutate 
 import math
+import pandas as pd
 
 os.putenv('SDL_VIDEODRIVER', 'fbcon')
 os.environ["SDL_VIDEODRIVER"] = "dummy"
@@ -145,6 +146,27 @@ def cross_over_test(pop):
         print(b.weights)
     
     print(counter)
+   
+def save_pop(pop):
+    list_of_values = []
+    #create dataframe to be save as csv
+    amount_of_weights = len(pop[0].weights) #get length of the df
+    header = [] #create header csv
+    for i in range(amount_of_weights):
+        header.append(f'Weight {i}')
+    for n in range(amount_of_weights):
+        header.append(f'STD DEV {n}')
+          
+    
+    #loop over individuals
+    for indi in pop:
+        
+        indi_attributes = list(np.append(indi.weights, indi.stddevs))
+        list_of_values.append(indi_attributes)
+    
+    df_to_csv = pd.DataFrame(list_of_values, columns = header)
+    
+    df_to_csv.to_csv(f'OutputData/Generation {i}, Max Fitness {stats_per_gen[i][1]}, Unique Runcode {unique_runcode}.csv')
 
 if __name__ ==  '__main__':
     global tau, tau_2, beta, stddev_lim, ALPHA
@@ -156,6 +178,7 @@ if __name__ ==  '__main__':
     tau_2 = 1/np.sqrt(np.sqrt(population_size))
     stddev_lim = 0.05
     #beta = 5/ 360 * 2 * np.pi
+    unique_runcode = random.random()
 
     env = Environment(experiment_name="test123",
                   playermode="ai",
@@ -204,6 +227,7 @@ if __name__ ==  '__main__':
 
     for i in range(len(stats_per_gen)):
         print("GEN {}, max = {:.2f}, min = {:.2f}, mean = {:.2f}".format(i, stats_per_gen[i][1], stats_per_gen[i][2], stats_per_gen[i][0]))
+        save_pop(pop)
     print(max_fitness_per_gen)
     plt.plot(average)
     plt.show()
