@@ -73,13 +73,10 @@ def blend_crossover(ind1, ind2):
         ind1_list[position_genome] = (1. - beta) * mixed_tuple_1 + beta * mixed_tuple_2
         ind2_list[position_genome] = beta * mixed_tuple_1 + (1 - beta) * mixed_tuple_2
 
-    ind1.weights = ind1_list[0]
-    ind1.stddevs = ind1_list[1]
-    
-    ind2.weights = ind2_list[0]
-    ind2.stddevs = ind2_list[1]
+    return_ind1 = Individual(ind1_list[0], ind1_list[1])
+    return_ind2 = Individual(ind2_list[0], ind2_list[1])
 
-    return ind1, ind2
+    return return_ind1, return_ind2
 
 def select_best(fitness_list, n):
     '''Returns indices of n best individuals'''
@@ -129,6 +126,25 @@ def calculate_fitness(fitness_list):
 def simulation(env,x):
     f,p,e,t = env.play(x)
     return f
+
+def cross_over_test(pop):
+    """
+    Return the amounts of individuals with values outside the boundaries for the crossover
+    """
+    counter = 0
+    for i in range(len(pop) - 1):
+        a,b = blend_crossover(pop[i], pop[i+1])
+        if (max(a.weights) > 1) or min((a.weights) < -1):
+            counter += 1
+        
+        if (max(b.weights) > 1) or min((b.weights) < -1):
+            counter += 1
+            
+        print(a.weights)
+        print('\n')
+        print(b.weights)
+    
+    print(counter)
 
 if __name__ ==  '__main__':
     global tau, tau_2, beta, stddev_lim, ALPHA
