@@ -166,7 +166,7 @@ def save_pop(pop):
     
     df_to_csv = pd.DataFrame(list_of_values, columns = header)
     
-    df_to_csv.to_csv(f'OutputData/Generation {i}, Max Fitness {stats_per_gen[i][1]}, Unique Runcode {unique_runcode}.csv')
+    df_to_csv.to_csv(f'OutputData/Generation {generation}, Max Fitness {max(fitness_list)}, Unique Runcode {unique_runcode}.csv')
 
 if __name__ ==  '__main__':
     global tau, tau_2, beta, stddev_lim, ALPHA
@@ -194,7 +194,7 @@ if __name__ ==  '__main__':
     pop = initiate_population(population_size,n_vars, -1, 1)
 
     stats_per_gen = []
-    for _ in range(generations):
+    for generation in range(generations):
 
         for individual in pop:
             individual.evaluate(env)
@@ -216,7 +216,7 @@ if __name__ ==  '__main__':
 
             individual.mutate_self()
             individual.check_and_alter_boundaries()
-
+        save_pop(pop)
         pop = new_pop
 
 
@@ -227,7 +227,6 @@ if __name__ ==  '__main__':
 
     for i in range(len(stats_per_gen)):
         print("GEN {}, max = {:.2f}, min = {:.2f}, mean = {:.2f}".format(i, stats_per_gen[i][1], stats_per_gen[i][2], stats_per_gen[i][0]))
-        save_pop(pop)
     print(max_fitness_per_gen)
     plt.plot(average)
     plt.show()
