@@ -168,7 +168,7 @@ def save_pop(pop):
     
     df_to_csv = pd.DataFrame(list_of_values, columns = header)
     
-    df_to_csv.to_csv(f'Enemy {level_number}, OutputData/Generation {generation}, Max Fitness {max(fitness_list)}, Hidden nodes {hidden}, Unique Runcode {unique_runcode}.csv')
+    df_to_csv.to_csv(f'OutputData/Enemy {level_number}, Generation {generation}, Max Fitness {max(fitness_list)}, Hidden nodes {hidden}, Unique Runcode {unique_runcode}.csv')
 
 
 if __name__ ==  '__main__':
