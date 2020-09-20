@@ -39,6 +39,8 @@ class Individual:
         for i in range(len(self.stddevs)):
             if self.stddevs[i] < stddev_lim:
                 self.stddevs[i] == stddev_lim
+            if self.stddevs[i] > 10 * stddev_lim:
+                self.stddevs[i] == 10 * stddev_lim
 
 
 def initiate_population(size, variables, min_weight, max_weight):
@@ -174,7 +176,7 @@ def save_pop(pop):
 if __name__ ==  '__main__':
     global tau, tau_2, beta, stddev_lim, ALPHA
     hidden = 10
-    population_size = 100
+    population_size = 10
     generations = 20
     ALPHA = 0.5
     tau = 1/np.sqrt(2 * population_size)
@@ -217,9 +219,9 @@ if __name__ ==  '__main__':
             new_pop.extend([ind1, ind2])
 
         for individual in new_pop:
-
-            individual.mutate_self()
-            individual.check_and_alter_boundaries()
+            if np.random.rand() > 0.8:
+                individual.mutate_self()
+                individual.check_and_alter_boundaries()
         save_pop(pop)
         pop = new_pop
 
