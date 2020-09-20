@@ -156,12 +156,14 @@ def save_pop(pop):
         header.append(f'Weight {i}')
     for n in range(amount_of_weights):
         header.append(f'STD DEV {n}')
+    header.append('Fitness')
           
     
     #loop over individuals
     for indi in pop:
         
         indi_attributes = list(np.append(indi.weights, indi.stddevs))
+        indi_attributes.append(indi.fitness)
         list_of_values.append(indi_attributes)
     
     df_to_csv = pd.DataFrame(list_of_values, columns = header)
