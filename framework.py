@@ -156,27 +156,31 @@ def save_pop(pop):
         header.append(f'Weight {i}')
     for n in range(amount_of_weights):
         header.append(f'STD DEV {n}')
+    header.append('Fitness')
           
     
     #loop over individuals
     for indi in pop:
         
         indi_attributes = list(np.append(indi.weights, indi.stddevs))
+        indi_attributes.append(indi.fitness)
         list_of_values.append(indi_attributes)
     
     df_to_csv = pd.DataFrame(list_of_values, columns = header)
     
-    df_to_csv.to_csv(f'OutputData/Generation {generation}, Max Fitness {max(fitness_list)}, Unique Runcode {unique_runcode}.csv')
+    df_to_csv.to_csv(f'Enemy {level_number}, OutputData/Generation {generation}, Max Fitness {max(fitness_list)}, Hidden nodes {hidden}, Unique Runcode {unique_runcode}.csv')
+
 
 if __name__ ==  '__main__':
     global tau, tau_2, beta, stddev_lim, ALPHA
-    hidden = 1
-    population_size = 5
+    hidden = 10
+    population_size = 100
     generations = 20
     ALPHA = 0.5
     tau = 1/np.sqrt(2 * population_size)
     tau_2 = 1/np.sqrt(np.sqrt(population_size))
     stddev_lim = 0.05
+    level_number = 2
     #beta = 5/ 360 * 2 * np.pi
     unique_runcode = random.random()
 
@@ -186,7 +190,7 @@ if __name__ ==  '__main__':
                   enemies = [2],
                   speed="fastest",
                   enemymode="static",
-                  level=2)
+                  level=level_number)
 
     n_vars = (env.get_num_sensors()+1)*hidden + (hidden + 1)*5        
     max_fitness_per_gen = []
