@@ -180,7 +180,7 @@ if __name__ ==  '__main__':
     tau = 1/np.sqrt(2 * population_size)
     tau_2 = 1/np.sqrt(np.sqrt(population_size))
     stddev_lim = 0.05
-    enemy_number = 2
+    level_number = 2
     #beta = 5/ 360 * 2 * np.pi
     unique_runcode = random.random()
 
@@ -190,7 +190,7 @@ if __name__ ==  '__main__':
                   enemies = [2],
                   speed="fastest",
                   enemymode="static",
-                  level=enemy_number)
+                  level=level_number)
 
     n_vars = (env.get_num_sensors()+1)*hidden + (hidden + 1)*5        
     max_fitness_per_gen = []
