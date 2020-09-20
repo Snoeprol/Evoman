@@ -179,6 +179,7 @@ if __name__ ==  '__main__':
     population_size = 10
     generations = 20
     ALPHA = 0.5
+    adapt_alpha = True
     tau = 1/np.sqrt(2 * population_size)
     tau_2 = 1/np.sqrt(np.sqrt(population_size))
     stddev_lim = 0.05
