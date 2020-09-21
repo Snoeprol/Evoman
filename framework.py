@@ -148,6 +148,17 @@ def cross_over_test(pop):
         print(b.weights)
     
     print(counter)
+    
+def alpha_adapt(number_of_zero_alpha_generations, generation):
+    """
+    number of zero alpha generations is the amount of generations at the end of the runs with alpha = 0
+    """
+    global ALPHA, generations, rate_of_change
+    if generation == 0:
+        rate_of_change = ALPHA / (generations - number_of_zero_alpha_generations) #lineral rate of change to zero for alpha
+    
+    ALPHA -= rate_of_change
+
    
 def save_pop(pop):
     list_of_values = []
@@ -170,16 +181,16 @@ def save_pop(pop):
     
     df_to_csv = pd.DataFrame(list_of_values, columns = header)
     
-    df_to_csv.to_csv(f'OutputData/Enemy {level_number}, Generation {generation}, Max Fitness {max(fitness_list)}, Hidden nodes {hidden}, Unique Runcode {unique_runcode}.csv')
+    df_to_csv.to_csv(f'OutputData/Enemy {level_number}, Generation {generation}, Max Fitness {round(max(fitness_list),2)}, Average {round(np.mean(fitness_list),2)}, Hidden nodes {hidden}, Unique Runcode {unique_runcode}.csv')
 
 
 if __name__ ==  '__main__':
     global tau, tau_2, beta, stddev_lim, ALPHA
     hidden = 10
-    population_size = 10
+    population_size = 100
     generations = 20
-    ALPHA = 0.5
-    adapt_alpha = True
+    ALPHA = 0
+    adapt_alpha = False
     tau = 1/np.sqrt(2 * population_size)
     tau_2 = 1/np.sqrt(np.sqrt(population_size))
     stddev_lim = 0.05
@@ -225,6 +236,11 @@ if __name__ ==  '__main__':
                 individual.check_and_alter_boundaries()
         save_pop(pop)
         pop = new_pop
+        
+        print(generation)
+        if adapt_alpha:
+            alpha_adapt(5, generation)
+            
 
 
         print('New generation of degenerates eradicated.')
