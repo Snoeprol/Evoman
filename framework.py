@@ -102,7 +102,7 @@ def select_tournament(fitness_list, tour_size):
     return chosen_indexes[max_individual]
 
 
-def select_ranking(fitness_list, s):
+def select_ranking(fitness_list, s = 1.5):
     ''' Ranks individuals according to its fitness and assigns a probability to
     an individual index according to its place in the ranking
     
@@ -148,6 +148,17 @@ def cross_over_test(pop):
         print(b.weights)
     
     print(counter)
+    
+def alpha_adapt(number_of_zero_alpha_generations, generation):
+    """
+    number of zero alpha generations is the amount of generations at the end of the runs with alpha = 0
+    """
+    global ALPHA, generations, rate_of_change
+    if generation == 0:
+        rate_of_change = ALPHA / (generations - number_of_zero_alpha_generations) #lineral rate of change to zero for alpha
+    
+    ALPHA -= rate_of_change
+
    
 def save_pop(pop):
     list_of_values = []
@@ -170,30 +181,30 @@ def save_pop(pop):
     
     df_to_csv = pd.DataFrame(list_of_values, columns = header)
     
-    df_to_csv.to_csv(f'OutputData/Enemy {level_number}, Generation {generation}, Max Fitness {max(fitness_list)}, Hidden nodes {hidden}, Unique Runcode {unique_runcode}.csv')
+    df_to_csv.to_csv(f'OutputData/Enemy {enemy_number}, Generation {generation}, Max Fitness {round(max(fitness_list),2)}, Average {round(np.mean(fitness_list),2)}, Hidden nodes {hidden}, Unique Runcode {unique_runcode}.csv')
 
 
 if __name__ ==  '__main__':
     global tau, tau_2, beta, stddev_lim, ALPHA
     hidden = 10
-    population_size = 10
-    generations = 20
+    population_size = 100
+    generations = 40
     ALPHA = 0.5
-    adapt_alpha = True
+    adapt_alpha = False
     tau = 1/np.sqrt(2 * population_size)
     tau_2 = 1/np.sqrt(np.sqrt(population_size))
     stddev_lim = 0.05
-    level_number = 2
-    #beta = 5/ 360 * 2 * np.pi
+    enemy_number = 2
+
     unique_runcode = random.random()
 
     env = Environment(experiment_name="test123",
                   playermode="ai",
                   player_controller=player_controller(hidden),
-                  enemies = [2],
+                  enemies = [enemy_number],
                   speed="fastest",
                   enemymode="static",
-                  level=level_number)
+                  level=2)
 
     n_vars = (env.get_num_sensors()+1)*hidden + (hidden + 1)*5        
     max_fitness_per_gen = []
@@ -212,7 +223,6 @@ if __name__ ==  '__main__':
         for _ in range(population_size // 2):
             parent_index_1 = select_tournament(fitness_list, 2)
             parent_index_2 = select_tournament(fitness_list, 2)
-            # print(parent_index_1, parent_index_2, pop[parent_index_1].fitness, pop[parent_index_2].fitness, "test")
             ind1, ind2 = blend_crossover(pop[parent_index_1], pop[parent_index_2])
             ind1.check_and_alter_boundaries()
             ind2.check_and_alter_boundaries()
@@ -225,6 +235,10 @@ if __name__ ==  '__main__':
                 individual.check_and_alter_boundaries()
         save_pop(pop)
         pop = new_pop
+        
+        if adapt_alpha:
+            alpha_adapt(5, generation)
+            
 
 
         print('New generation of degenerates eradicated.')
