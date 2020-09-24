@@ -6,7 +6,7 @@ import scipy.stats as sp
 import random
 from demo_controller import player_controller
 import matplotlib.pyplot as plt
-from covariance import mutate 
+from mutation import mutate 
 import math
 import pandas as pd
 
