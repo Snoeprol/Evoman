@@ -66,20 +66,73 @@ def blend_crossover(ind1, ind2):
     Code taken from:
     https://github.com/DEAP/deap/blob/master/deap/tools/crossover.py
     """
-    ind1_list = [ind1.weights, ind1.stddevs]
+    ind1_list = [ind1.weights,  ind1.stddevs]
     ind2_list = [ind2.weights, ind2.stddevs]
+    
+    for i in range(2):
+        for position_genome, (mixed_tuple_1, mixed_tuple_2) in enumerate(zip(ind1_list[i], ind2_list[i])):
+            #add random factor for exploration
+            beta = (1. + 2. * ALPHA) * random.random() - ALPHA
+            #add genomes to kids
+            ind1_list[i][position_genome] = (1. - beta) * mixed_tuple_1 + beta * mixed_tuple_2
+            ind2_list[i][position_genome] = beta * mixed_tuple_1 + (1 - beta) * mixed_tuple_2
+
+    return_ind1 = Individual(ind1_list[0], ind1_list[1])
+    return_ind2 = Individual(ind2_list[0],  ind2_list[1])
+
+    return return_ind1, return_ind2
+
+def blend_crossover_old(ind1, ind2):
+    """
+    Blend two genomes to two offsprings
+    Code taken from:
+    https://github.com/DEAP/deap/blob/master/deap/tools/crossover.py
+    """
+    ind1_list = [ind1.weights,  ind1.stddevs]
+    ind2_list = [ind2.weights, ind2.stddevs]
+    
     
     for position_genome, (mixed_tuple_1, mixed_tuple_2) in enumerate(zip(ind1_list, ind2_list)):
         #add random factor for exploration
         beta = (1. + 2. * ALPHA) * random.random() - ALPHA
         #add genomes to kids
+        print(ind1_list[position_genome], ind2_list[position_genome], "\n")
         ind1_list[position_genome] = (1. - beta) * mixed_tuple_1 + beta * mixed_tuple_2
         ind2_list[position_genome] = beta * mixed_tuple_1 + (1 - beta) * mixed_tuple_2
+        print(beta, ind1_list[position_genome])
+
+    return_ind1 = Individual(ind1_list[0], ind1_list[1])
+    return_ind2 = Individual(ind2_list[0],  ind2_list[1])
+
+    return return_ind1, return_ind2
+
+def blend_crossover2(ind1, ind2):
+    """
+    Blend two genomes to two offsprings
+    Code taken from:
+    https://github.com/DEAP/deap/blob/master/deap/tools/crossover.py
+    """
+    ind1_list = [ind1.weights, ind1.stddevs]
+    ind2_list = [ind2.weights, ind2.stddevs]
+    
+    for i in range(2):
+        for position_genome, (mixed_tuple_1, mixed_tuple_2) in enumerate(zip(ind1_list[i], ind2_list[i])):
+            #add random factor for exploration
+            difference = abs((mixed_tuple_1 +  1) - (mixed_tuple_2 + 1))
+            if mixed_tuple_1 < mixed_tuple_2:
+                interval = [mixed_tuple_1 - ALPHA * difference, mixed_tuple_2 + ALPHA * difference]
+            else:
+                interval = [mixed_tuple_2 - ALPHA * difference, mixed_tuple_1 + ALPHA * difference]
+            
+            #add genomes to kids
+            ind1_list[i][position_genome] = random.uniform(interval[0], interval[1])
+            ind2_list[i][position_genome] = random.uniform(interval[0], interval[1])
 
     return_ind1 = Individual(ind1_list[0], ind1_list[1])
     return_ind2 = Individual(ind2_list[0], ind2_list[1])
 
     return return_ind1, return_ind2
+
 
 def select_best(fitness_list, n):
     '''Returns indices of n best individuals'''
@@ -187,14 +240,14 @@ def save_pop(pop):
 if __name__ ==  '__main__':
     global tau, tau_2, beta, stddev_lim, ALPHA
     hidden = 10
-    population_size = 100
+    population_size = 1000
     generations = 50
     ALPHA = 0.5
     adapt_alpha = False
     tau = 1/np.sqrt(2 * population_size)
     tau_2 = 1/np.sqrt(np.sqrt(population_size))
     stddev_lim = 0.05
-    enemy_number = 2
+    enemy_number = 1
 
     for q in range(10):
         unique_runcode = random.random()
@@ -224,7 +277,7 @@ if __name__ ==  '__main__':
             for _ in range(population_size // 2):
                 parent_index_1 = select_tournament(fitness_list, 2)
                 parent_index_2 = select_tournament(fitness_list, 2)
-                ind1, ind2 = blend_crossover(pop[parent_index_1], pop[parent_index_2])
+                ind1, ind2 = blend_crossover2(pop[parent_index_1], pop[parent_index_2])
                 ind1.check_and_alter_boundaries()
                 ind2.check_and_alter_boundaries()
                 
