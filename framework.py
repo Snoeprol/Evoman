@@ -214,6 +214,10 @@ def alpha_adapt(number_of_zero_alpha_generations, generation):
 
    
 def save_pop(pop):
+    """Explanation:
+        Takes in population, saves output as csv file to folder 'OutputData'
+        Saves weights, std and fitness of each individual
+        """
     list_of_values = []
     #create dataframe to be save as csv
     amount_of_weights = len(pop[0].weights) #get length of the df
@@ -237,71 +241,71 @@ def save_pop(pop):
     df_to_csv.to_csv(f'OutputData/Enemy {enemy_number}, Generation {generation}, Max Fitness {round(max(fitness_list),2)}, Average {round(np.mean(fitness_list),2)}, Hidden nodes {hidden}, Unique Runcode {unique_runcode}.csv')
 
 
-if __name__ ==  '__main__':
-    global tau, tau_2, beta, stddev_lim, ALPHA
-    hidden = 10
-    population_size = 1000
-    generations = 50
-    ALPHA = 0.5
-    adapt_alpha = False
-    tau = 1/np.sqrt(2 * population_size)
-    tau_2 = 1/np.sqrt(np.sqrt(population_size))
-    stddev_lim = 0.05
-    enemy_number = 1
-
-    for q in range(10):
-        unique_runcode = random.random()
-
-        env = Environment(experiment_name="test123",
-                      playermode="ai",
-                      player_controller=player_controller(hidden),
-                      enemies = [enemy_number],
-                      speed="fastest",
-                      enemymode="static",
-                      level=2)
-
-        n_vars = (env.get_num_sensors()+1)*hidden + (hidden + 1)*5        
-        max_fitness_per_gen = []
-        average = []
-        pop = initiate_population(population_size,n_vars, -1, 1)
-
-        stats_per_gen = []
-        for generation in range(generations):
-
-            for individual in pop:
-                individual.evaluate(env)
-
-            fitness_list = np.array([individual.fitness for individual in pop])
-
-            new_pop = []
-            for _ in range(population_size // 2):
-                parent_index_1 = select_tournament(fitness_list, 2)
-                parent_index_2 = select_tournament(fitness_list, 2)
-                ind1, ind2 = blend_crossover2(pop[parent_index_1], pop[parent_index_2])
-                ind1.check_and_alter_boundaries()
-                ind2.check_and_alter_boundaries()
-                
-                new_pop.extend([ind1, ind2])
-
-            for individual in new_pop:
-                if np.random.rand() > 0.8:
-                    individual.mutate_self()
-                    individual.check_and_alter_boundaries()
-            save_pop(pop)
-            pop = new_pop
-            
-            if adapt_alpha:
-                alpha_adapt(5, generation)
-                
-
-
-            print('New generation of degenerates eradicated.')
-            max_fitness_per_gen.append(max(fitness_list))
-            average.append(np.mean(fitness_list))
-            stats_per_gen.append([np.mean(fitness_list), np.max(fitness_list), np.min(fitness_list)])
-
-        for i in range(len(stats_per_gen)):
-            print("GEN {}, max = {:.2f}, min = {:.2f}, mean = {:.2f}".format(i, stats_per_gen[i][1], stats_per_gen[i][2], stats_per_gen[i][0]))
-        print(max_fitness_per_gen)
-        # plt.plot(average)
-        # plt.show()
+#if __name__ ==  '__main__':
+#    global tau, tau_2, beta, stddev_lim, ALPHA
+#    hidden = 10
+#    population_size = 1000
+#    generations = 50
+#    ALPHA = 0.5
+#    adapt_alpha = False
+#    tau = 1/np.sqrt(2 * population_size)
+#    tau_2 = 1/np.sqrt(np.sqrt(population_size))
+#    stddev_lim = 0.05
+#    enemy_number = 1
+#
+#    for q in range(10):
+#        unique_runcode = random.random()
+#
+#        env = Environment(experiment_name="test123",
+#                      playermode="ai",
+#                      player_controller=player_controller(hidden),
+#                      enemies = [enemy_number],
+#                      speed="fastest",
+#                      enemymode="static",
+#                      level=2)
+#
+#        n_vars = (env.get_num_sensors()+1)*hidden + (hidden + 1)*5        
+#        max_fitness_per_gen = []
+#        average = []
+#        pop = initiate_population(population_size,n_vars, -1, 1)
+#
+#        stats_per_gen = []
+#        for generation in range(generations):
+#
+#            for individual in pop:
+#                individual.evaluate(env)
+#
+#            fitness_list = np.array([individual.fitness for individual in pop])
+#
+#            new_pop = []
+#            for _ in range(population_size // 2):
+#                parent_index_1 = select_tournament(fitness_list, 2)
+#                parent_index_2 = select_tournament(fitness_list, 2)
+#                ind1, ind2 = blend_crossover2(pop[parent_index_1], pop[parent_index_2])
+#                ind1.check_and_alter_boundaries()
+#                ind2.check_and_alter_boundaries()
+#                
+#                new_pop.extend([ind1, ind2])
+#
+#            for individual in new_pop:
+#                if np.random.rand() > 0.8:
+#                    individual.mutate_self()
+#                    individual.check_and_alter_boundaries()
+#            save_pop(pop)
+#            pop = new_pop
+#            
+#            if adapt_alpha:
+#                alpha_adapt(5, generation)
+#                
+#
+#
+#            print('New generation of degenerates eradicated.')
+#            max_fitness_per_gen.append(max(fitness_list))
+#            average.append(np.mean(fitness_list))
+#            stats_per_gen.append([np.mean(fitness_list), np.max(fitness_list), np.min(fitness_list)])
+#
+#        for i in range(len(stats_per_gen)):
+#            print("GEN {}, max = {:.2f}, min = {:.2f}, mean = {:.2f}".format(i, stats_per_gen[i][1], stats_per_gen[i][2], stats_per_gen[i][0]))
+#        print(max_fitness_per_gen)
+#        # plt.plot(average)
+#        # plt.show()
