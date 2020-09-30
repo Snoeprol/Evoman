@@ -6,7 +6,7 @@ import scipy.stats as sp
 import random
 from demo_controller import player_controller
 import matplotlib.pyplot as plt
-from covariance import mutate 
+from mutation import mutate 
 import math
 import pandas as pd
 
@@ -251,4 +251,6 @@ if __name__ ==  '__main__':
             print("GEN {}, max = {:.2f}, min = {:.2f}, mean = {:.2f}".format(i, stats_per_gen[i][1], stats_per_gen[i][2], stats_per_gen[i][0]))
         print(max_fitness_per_gen)
         # plt.plot(average)
+
         # plt.show()
+
