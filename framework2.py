@@ -5,12 +5,8 @@ import numpy as np
 import scipy.stats as sp
 import random
 from demo_controller import player_controller
-#import matplotlib.pyplot as plt
-from covariance import mutate 
-import math
+from numpy.random import multivariate_normal
 import pandas as pd
-import time
-import os
 cwd = os.getcwd()
 sys.argv = [1, '1', '1']
 #os.putenv('SDL_VIDEODRIVER', 'fbcon')
@@ -90,6 +86,14 @@ def initiate_population(size, variables, min_weight, max_weight):
 
     return population
 
+def mutate(individual, tau, tau_2):
+    '''Assumes individual of the form   individual.weights = weights/ biases
+                                        individual.stddevs = standard devs'''
+    
+    individual.stddevs *= np.exp(tau_2 * np.random.normal(0,1, len(individual.stddevs)) + tau * np.random.normal(0,1, len(individual.stddevs)))
+    change = multivariate_normal(mean = np.zeros(len(individual.weights)), cov = np.diag(individual.stddevs))
+    individual.weights += change
+    return individual
 
 
 def blend_crossover(ind1, ind2):
@@ -242,7 +246,10 @@ if True == True:
             for individual in pop:
                 individual.evaluate_multi(bosses)
                 with open("best_multi.txt",'r') as f:
-                    max_fitness =  float(f.readline().split(',')[1])
+                    try:
+                        max_fitness =  float(f.readline().split(',')[1])
+                    except:
+                        max_fitness = -1000
                     
                 if individual.multi_fitness > max_fitness:
                     max_fitness = individual.multi_fitness
