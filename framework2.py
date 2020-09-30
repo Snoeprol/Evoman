@@ -40,6 +40,7 @@ class Individual:
         self.fitness = simulation(env, self.weights)
         
     def evaluate_multi(self, bosses):
+        # Changed to gain
         total_fitness = 0
         for boss_number in bosses:
             env = Environment(experiment_name="test123",
@@ -49,7 +50,8 @@ class Individual:
                         speed="fastest",
                         enemymode="static",
                         level=2)
-            total_fitness += simulation(env, self.weights)
+            values = simulation_gain(env, self.weights)
+            total_fitness += values[0] - values[1]
 
         self.multi_fitness = total_fitness
         if total_fitness > self.best_fitness:
@@ -67,6 +69,7 @@ class Individual:
     def log(self):
         with open("best_multi.txt",'w') as f:
             f.write('Fitness, {}, weighths, {}'.format(self.multi_fitness,self.weights))
+
 
 def initiate_population(size, variables, min_weight, max_weight, velocity):
     ''' Initiate a population of individuals with variables amount of parameters unfiformly 
@@ -95,6 +98,9 @@ def simulation(env,x):
     f,p,e,t = env.play(x)
     return f
 
+def simulation_gain(env,x):
+    f,p,e,t = env.play(x)
+    return p, e
    
 def save_pop(pop):
     list_of_values = []
@@ -118,6 +124,36 @@ def save_pop(pop):
     df_to_csv = pd.DataFrame(list_of_values, columns = header)
     
     df_to_csv.to_csv(f'OutputData/Enemy {bosses}, Generation {generation}, Max Fitness {round(max(fitness_list),2)}, Average {round(np.mean(fitness_list),2)}, Hidden nodes {hidden}, {sys.argv[2]}, Unique Runcode {unique_runcode}.csv')
+
+def mutate_swarm(individual, global_best):
+
+    # Generate random matrices
+    U_1 = []
+    U_2 = []
+    U_1_sum = U_2_sum = 0
+
+    for i in range(len(individual.weights)):
+        U_i_1 = np.random.random()
+        U_i_2 = np.random.random()
+        U_1.append(U_i_1)
+        U_2.append(U_i_2)
+        U_1_sum += U_i_1
+        U_2_sum += U_i_2
+    
+    U_1 = np.diagflat(np.array(U_1)/U_1_sum)
+    U_2 = np.diagflat(np.array(U_2)/U_2_sum)
+    
+    # Define weights
+    w1 = 0.4
+    w2 = 0.3
+    w3 = 0.3
+    
+    vec_1 = individual.best - individual.weights
+    vec_2 = global_best - individual.weights
+    # Add vectors
+    individual.velocities = w1 * individual.velocities + w2 * U_1 * vec_1 + w3 * U_2 * vec_2 
+    individual.weights = individual.weights + individual.velocities
+
 
 if __name__ ==  '__main__':
     global tau, tau_2, beta, stddev_lim, ALPHA, bosses
@@ -146,12 +182,9 @@ if __name__ ==  '__main__':
         
             for individual in pop:
                 individual.evaluate_multi(bosses)
-
                 with open("best_multi.txt",'r') as f:
-                    try:
-                        max_fitness =  float(f.readline().split(',')[1])
-                    except:
-                        max_fitness = -1000
+                    max_fitness =  float(f.readline().split(',')[1])
+
                     
                 if individual.multi_fitness > max_fitness:
                     max_fitness = individual.multi_fitness
@@ -175,3 +208,6 @@ if __name__ ==  '__main__':
             print("GEN {}, max = {:.2f}, min = {:.2f}, mean = {:.2f}".format(i, stats_per_gen[i][1], stats_per_gen[i][2], stats_per_gen[i][0]))
             
         print(max_fitness_per_gen)
+individual = Individual(np.random.rand(100), npp.random.rand(100))
+global_best = np.random.rand(100)
+mutate_swarm(individual, global_best)
