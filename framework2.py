@@ -153,6 +153,7 @@ def read_data(file_path):
 def mutate_swarm(individual, global_best):
 
     # Generate random matrices
+    '''
     U_1 = []
     U_2 = []
     U_1_sum = U_2_sum = 0
@@ -172,7 +173,14 @@ def mutate_swarm(individual, global_best):
     w1 = 0.4
     w2 = 0.3
     w3 = 0.3
-    
+    '''
+    U_1 = np.random.random() * (1/2 + np.log(2))
+    U_2 = np.random.random() * (1/2 + np.log(2))
+
+    w1 = 1/ (2 * np.log(2))
+    w2 = 1
+    w3 = 1
+
     vec_1 = individual.best - individual.weights
     vec_2 = global_best - individual.weights
     # Add vectors
