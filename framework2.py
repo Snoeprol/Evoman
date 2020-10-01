@@ -8,6 +8,7 @@ from demo_controller import player_controller
 from numpy.random import multivariate_normal
 import pandas as pd
 import ast # read a data frame with lists
+import matplotlib.pyplot as plt 
 cwd = os.getcwd()
 sys.argv = [1, '1', '1']
 os.putenv('SDL_VIDEODRIVER', 'fbcon')
@@ -72,15 +73,17 @@ class Individual:
             f.write('Fitness, {}, weighths, {}'.format(self.multi_fitness,self.weights))
 
 
-def initiate_population(size, variables, min_weight, max_weight, velocity):
+def initiate_population(size, variables, min_weight, max_weight):
     ''' Initiate a population of individuals with variables amount of parameters unfiformly 
     chosen between min_weight and max_weight'''
     population = []
 
-    velocities = [velocity] * variables 
     for _ in range(size):
-        weights = np.random.rand(variables) * (max_weight - min_weight) +  min_weight
-        population.append(Individual(weights, np.array(velocity)))
+        weights = np.array(np.random.rand(variables) * (max_weight - min_weight) +  min_weight)
+
+        velocities = (np.array(np.random.rand(variables) * (max_weight - min_weight) + min_weight)  -  weights) / 2
+        
+        population.append(Individual(weights, velocities))
 
     return population
 
@@ -180,37 +183,38 @@ def mutate_swarm(individual, global_best):
 if __name__ ==  '__main__':
     global tau, tau_2, beta, stddev_lim, ALPHA, bosses
     hidden = 10
-    population_size = 2
-    generations = 4
+    population_size = 1
+    generations = 1
 
     n_vars = (20+1)*hidden + (hidden + 1)*5 
 
-    bosses = [1,2,3,4]
-    tournament = 1
+    bosses = [1,2]
+
     max_fitness = -1000
     upper_bound = 1
     lower_bound = -1
-    velocity = 1.2
+
     for q in range(1):
         unique_runcode = random.random()
 
  
         max_fitness_per_gen = []
         average = []
-        pop = initiate_population(population_size, n_vars, lower_bound, upper_bound, velocity)
+        pop = initiate_population(population_size, n_vars, lower_bound, upper_bound)
 
         stats_per_gen = []
         for generation in range(generations):
         
             for individual in pop:
                 individual.evaluate_multi(bosses)
-                with open("best_multi.txt",'r') as f:
-                    max_fitness =  float(f.readline().split(',')[1])
+
+                # with open("best_multi.txt",'r') as f:
+                #     max_fitness =  float(f.readline().split(',')[1])
 
                     
-                if individual.multi_fitness > max_fitness:
-                    max_fitness = individual.multi_fitness
-                    individual.log()
+                # if individual.multi_fitness > max_fitness:
+                #     max_fitness = individual.multi_fitness
+                #     individual.log()
 
             fitness_list = np.array([individual.multi_fitness for individual in pop])
 
@@ -221,15 +225,15 @@ if __name__ ==  '__main__':
                     
 
 
-            print('New generation of degenerates eradicated.')
-            max_fitness_per_gen.append(max(fitness_list))
-            average.append(np.mean(fitness_list))
-            stats_per_gen.append([np.mean(fitness_list), np.max(fitness_list), np.min(fitness_list)])
+            # print('New generation of degenerates eradicated.')
+            # max_fitness_per_gen.append(max(fitness_list))
+            # average.append(np.mean(fitness_list))
+            # stats_per_gen.append([np.mean(fitness_list), np.max(fitness_list), np.min(fitness_list)])
 
         for i in range(len(stats_per_gen)):
             print("GEN {}, max = {:.2f}, min = {:.2f}, mean = {:.2f}".format(i, stats_per_gen[i][1], stats_per_gen[i][2], stats_per_gen[i][0]))
             
         print(max_fitness_per_gen)
-individual = Individual(np.random.rand(100), npp.random.rand(100))
-global_best = np.random.rand(100)
-mutate_swarm(individual, global_best)
+# individual = Individual(np.random.rand(100), np.random.rand(100))
+# global_best = np.random.rand(100)
+# mutate_swarm(individual, global_best)
