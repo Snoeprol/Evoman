@@ -7,6 +7,7 @@ import random
 from demo_controller import player_controller
 from numpy.random import multivariate_normal
 import pandas as pd
+import ast # read a data frame with lists
 cwd = os.getcwd()
 sys.argv = [1, '1', '1']
 os.putenv('SDL_VIDEODRIVER', 'fbcon')
@@ -125,6 +126,27 @@ def save_pop(pop):
     
     df_to_csv.to_csv(f'OutputData/Enemy {bosses}, Generation {generation}, Max Fitness {round(max(fitness_list),2)}, Average {round(np.mean(fitness_list),2)}, Hidden nodes {hidden}, {sys.argv[2]}, Unique Runcode {unique_runcode}.csv')
 
+def save_pop2(pop):
+     
+    weights = []
+    multi_fitness = []
+    for individual in pop:     
+         weights.append(individual.weights)
+         multi_fitness.append(individual.multi_fitness)
+    
+    pandas_dict = {"multi_fitness": multi_fitness,
+                   "weights": weights}
+    
+    df_to_csv = pd.DataFrame(pandas_dict)
+    
+    df_to_csv.to_csv(f'OutputData/Enemy {bosses}, Generation {generation}, Max Fitness {round(max(multi_fitness),2)}, Average {round(np.mean(multi_fitness),2)}, Hidden nodes {hidden}, {sys.argv[2]}, Unique Runcode {unique_runcode}.csv')
+
+def read_data(file_path):
+    def from_np_array(array_string):
+        array_string = ','.join(array_string.replace('[ ', '[').split())
+        return np.array(ast.literal_eval(array_string))
+    return pd.read_csv(file_path, converters={'weights': from_np_array})
+    
 def mutate_swarm(individual, global_best):
 
     # Generate random matrices
