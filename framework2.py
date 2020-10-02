@@ -9,13 +9,9 @@ from numpy.random import multivariate_normal
 import pandas as pd
 import ast # read a data frame with lists
 import matplotlib.pyplot as plt 
-cwd = os.getcwd()
-sys.argv = [1, '1', '1']
+
 os.putenv('SDL_VIDEODRIVER', 'fbcon')
 os.environ["SDL_VIDEODRIVER"] = "dummy"
-
-min_weight = -1
-max_weight = 1
 
 def time_it(method):
     def timed(*args, **kw):
@@ -186,26 +182,23 @@ def mutate_swarm(individual, global_best):
     # Add vectors
     individual.velocities = w1 * individual.velocities + w2 * U_1 * vec_1 + w3 * U_2 * vec_2 
     individual.weights = individual.weights + individual.velocities
-
+    individual.check_and_alter_boundaries()
 
 if __name__ ==  '__main__':
-    global tau, tau_2, beta, stddev_lim, ALPHA, bosses
+
     hidden = 10
-    population_size = 1
-    generations = 1
+    population_size = 2
+    generations = 2
+    bosses = [1,2,3]
 
     n_vars = (20+1)*hidden + (hidden + 1)*5 
 
-    bosses = [1,2]
-
-    max_fitness = -1000
     upper_bound = 1
     lower_bound = -1
+    global_best = -1000
 
-    for q in range(1):
+    for _ in range(10):
         unique_runcode = random.random()
-
- 
         max_fitness_per_gen = []
         average = []
         pop = initiate_population(population_size, n_vars, lower_bound, upper_bound)
@@ -216,27 +209,13 @@ if __name__ ==  '__main__':
             for individual in pop:
                 individual.evaluate_multi(bosses)
 
-                # with open("best_multi.txt",'r') as f:
-                #     max_fitness =  float(f.readline().split(',')[1])
-
-                    
-                # if individual.multi_fitness > max_fitness:
-                #     max_fitness = individual.multi_fitness
-                #     individual.log()
-
             fitness_list = np.array([individual.multi_fitness for individual in pop])
+            if max(fitness_list) > global_best:
+                index_best = np.argmax(fitness_list)
+                best_individual = pop[index_best]
 
-            # new_pop = []
-
-            # pop = new_pop
-
-                    
-
-
-            # print('New generation of degenerates eradicated.')
-            # max_fitness_per_gen.append(max(fitness_list))
-            # average.append(np.mean(fitness_list))
-            # stats_per_gen.append([np.mean(fitness_list), np.max(fitness_list), np.min(fitness_list)])
+            for individual in pop:
+                mutate_swarm(individual, best_individual)
 
         for i in range(len(stats_per_gen)):
             print("GEN {}, max = {:.2f}, min = {:.2f}, mean = {:.2f}".format(i, stats_per_gen[i][1], stats_per_gen[i][2], stats_per_gen[i][0]))
