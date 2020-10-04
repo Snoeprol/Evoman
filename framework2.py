@@ -200,7 +200,7 @@ if __name__ ==  '__main__':
     upper_bound = 1
     lower_bound = -1
     velocity = 1.2
-    scaling_factor = 0.1 #between 0 and 1
+    scaling_factor = 1.5 #between 0 and 1
     for q in range(1):
         unique_runcode = random.random()
 
