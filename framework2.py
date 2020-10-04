@@ -138,7 +138,7 @@ def save_pop2(pop):
     
     df_to_csv = pd.DataFrame(pandas_dict)
     
-    df_to_csv.to_csv(f'OutputData/Enemy {bosses}, Generation {generation}, Max Fitness {round(max(multi_fitness),2)}, Average {round(np.mean(multi_fitness),2)}, Hidden nodes {hidden}, {sys.argv[2]}, Unique Runcode {unique_runcode}.csv')
+    df_to_csv.to_csv(f'OutputData/Enemy {bosses}, Generation {generation}, Max Fitness {round(max(multi_fitness),2)}, Average {round(np.mean(multi_fitness),2)}, Hidden nodes {hidden}, Unique Runcode {unique_runcode}.csv')
 
 def read_data(file_path):
     def from_np_array(array_string):
@@ -178,7 +178,7 @@ def mutate_swarm(individual, global_best):
     w3 = 1
 
     vec_1 = individual.best - individual.weights
-    vec_2 = global_best - individual.weights
+    vec_2 = global_best.weights - individual.weights
     # Add vectors
     individual.velocities = w1 * individual.velocities + w2 * U_1 * vec_1 + w3 * U_2 * vec_2 
     individual.weights = individual.weights + individual.velocities
@@ -187,8 +187,8 @@ def mutate_swarm(individual, global_best):
 if __name__ ==  '__main__':
 
     hidden = 10
-    population_size = 2
-    generations = 2
+    population_size = 4
+    generations = 5
     bosses = [1,2,3]
 
     n_vars = (20+1)*hidden + (hidden + 1)*5 
@@ -204,6 +204,7 @@ if __name__ ==  '__main__':
         pop = initiate_population(population_size, n_vars, lower_bound, upper_bound)
 
         stats_per_gen = []
+
         for generation in range(generations):
         
             for individual in pop:
@@ -216,6 +217,8 @@ if __name__ ==  '__main__':
 
             for individual in pop:
                 mutate_swarm(individual, best_individual)
+
+            save_pop2(pop)
 
         for i in range(len(stats_per_gen)):
             print("GEN {}, max = {:.2f}, min = {:.2f}, mean = {:.2f}".format(i, stats_per_gen[i][1], stats_per_gen[i][2], stats_per_gen[i][0]))
