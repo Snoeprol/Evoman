@@ -228,7 +228,7 @@ if __name__ ==  '__main__':
 
     upper_bound = 1
     lower_bound = -1
-    runs = 2
+    runs = 1
 
 
     for _ in range(runs):
