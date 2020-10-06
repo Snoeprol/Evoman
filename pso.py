@@ -137,7 +137,7 @@ def save_pop2(pop):
     
     df_to_csv = pd.DataFrame(pandas_dict)
     
-    df_to_csv.to_csv(f'OutputData/Enemy {bosses}, Generation {generation}, Max Fitness {round(max(multi_fitness),2)}, Average {round(np.mean(multi_fitness),2)}, Hidden nodes {hidden}, Unique Runcode {unique_runcode}.csv')
+    df_to_csv.to_csv(f'P, OutputData/Enemy {bosses}, Generation {generation}, Max Fitness {round(max(multi_fitness),2)}, Average {round(np.mean(multi_fitness),2)}, Hidden nodes {hidden}, Unique Runcode {unique_runcode}.csv')
 
 def read_data(file_path):
     def from_np_array(array_string):
