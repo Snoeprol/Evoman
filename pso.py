@@ -221,7 +221,7 @@ if __name__ ==  '__main__':
 
         for i in range(len(stats_per_gen)):
             print("GEN {}, max = {:.2f}, min = {:.2f}, mean = {:.2f}".format(i, stats_per_gen[i][1], stats_per_gen[i][2], stats_per_gen[i][0]))
-            
+        
         print(max_fitness_per_gen)
 # individual = Individual(np.random.rand(100), np.random.rand(100))
 # global_best = np.random.rand(100)
