@@ -7,11 +7,13 @@ import random
 from demo_controller import player_controller
 from numpy.random import multivariate_normal
 import pandas as pd
-import ast # read a data frame with lists
-import matplotlib.pyplot as plt 
-
+cwd = os.getcwd()
+sys.argv = [1, '1', '1']
 os.putenv('SDL_VIDEODRIVER', 'fbcon')
 os.environ["SDL_VIDEODRIVER"] = "dummy"
+
+min_weight = -1
+max_weight = 1
 
 def time_it(method):
     def timed(*args, **kw):
@@ -31,7 +33,7 @@ class Individual:
         self.weights = weights
         self.velocities = velocities
         self.best = weights
-        self.best_fitness = -100 
+        self.best_fitness = -1000
         self.multi_fitness = -100
 
     def evaluate(self, env):
@@ -69,17 +71,15 @@ class Individual:
             f.write('Fitness, {}, weighths, {}'.format(self.multi_fitness,self.weights))
 
 
-def initiate_population(size, variables, min_weight, max_weight):
+def initiate_population(size, variables, min_weight, max_weight, velocity):
     ''' Initiate a population of individuals with variables amount of parameters unfiformly 
     chosen between min_weight and max_weight'''
     population = []
 
+    velocities = [velocity] * variables 
     for _ in range(size):
-        weights = np.array(np.random.rand(variables) * (max_weight - min_weight) +  min_weight)
-
-        velocities = (np.array(np.random.rand(variables) * (max_weight - min_weight) + min_weight)  -  weights) / 2
-        
-        population.append(Individual(weights, velocities))
+        weights = np.random.rand(variables) * (max_weight - min_weight) +  min_weight
+        population.append(Individual(weights, np.array(velocity)))
 
     return population
 
@@ -101,6 +101,34 @@ def simulation(env,x):
 def simulation_gain(env,x):
     f,p,e,t = env.play(x)
     return p, e
+
+def differential_evolution(pop):
+    
+    new_pop = []
+    for i in range(len(pop)):
+        
+        #create mutation vector
+        a,b,c = random.sample(range(0,len(pop)), 3)
+        if i == a:
+            a += 1
+            if a > (len(pop) -1):
+                a = a - 2       
+        if i == b:
+            b += 1
+            if b > (len(pop) -1):
+                b = b - 2
+        if i == c:
+            c += 1
+            if c > (len(pop) -1):
+                c = c - 2
+        
+        mutant_vector = pop[a].weights + scaling_factor * (pop[b].weights - pop[c].weights)
+        trail_vector = Individual(0.5 * mutant_vector + 0.5 * pop[i].weights, pop[i].velocities) #trail vector is mix of two vectors
+        trail_vector.evaluate_multi(bosses)
+        if trail_vector.multi_fitness > pop[i].multi_fitness: #check which vector is better
+            new_pop.append(trail_vector)
+        else: new_pop.append(pop[i])
+    return new_pop
    
 def save_pop(pop):
     list_of_values = []
@@ -117,39 +145,17 @@ def save_pop(pop):
     #loop over individuals
     for indi in pop:
         
-        indi_attributes = list(np.append(indi.weights, indi.stddevs))
-        indi_attributes.append(indi.fitness)
+        indi_attributes = list(np.append(indi.weights, indi.velocities))
+        indi_attributes.append(indi.multi_fitness)
         list_of_values.append(indi_attributes)
     
     df_to_csv = pd.DataFrame(list_of_values, columns = header)
     
     df_to_csv.to_csv(f'OutputData/Enemy {bosses}, Generation {generation}, Max Fitness {round(max(fitness_list),2)}, Average {round(np.mean(fitness_list),2)}, Hidden nodes {hidden}, {sys.argv[2]}, Unique Runcode {unique_runcode}.csv')
 
-def save_pop2(pop):
-     
-    weights = []
-    multi_fitness = []
-    for individual in pop:     
-         weights.append(individual.weights)
-         multi_fitness.append(individual.multi_fitness)
-    
-    pandas_dict = {"multi_fitness": multi_fitness,
-                   "weights": weights}
-    
-    df_to_csv = pd.DataFrame(pandas_dict)
-    
-    df_to_csv.to_csv(f'OutputData/Enemy {bosses}, Generation {generation}, Max Fitness {round(max(multi_fitness),2)}, Average {round(np.mean(multi_fitness),2)}, Hidden nodes {hidden}, Unique Runcode {unique_runcode}.csv')
-
-def read_data(file_path):
-    def from_np_array(array_string):
-        array_string = ','.join(array_string.replace('[ ', '[').split())
-        return np.array(ast.literal_eval(array_string))
-    return pd.read_csv(file_path, converters={'weights': from_np_array})
-    
 def mutate_swarm(individual, global_best):
 
     # Generate random matrices
-    '''
     U_1 = []
     U_2 = []
     U_1_sum = U_2_sum = 0
@@ -169,61 +175,78 @@ def mutate_swarm(individual, global_best):
     w1 = 0.4
     w2 = 0.3
     w3 = 0.3
-    '''
-    U_1 = np.random.random() * (1/2 + np.log(2))
-    U_2 = np.random.random() * (1/2 + np.log(2))
-
-    w1 = 1/ (2 * np.log(2))
-    w2 = 1
-    w3 = 1
-
+    
     vec_1 = individual.best - individual.weights
-    vec_2 = global_best.weights - individual.weights
+    vec_2 = global_best - individual.weights
     # Add vectors
     individual.velocities = w1 * individual.velocities + w2 * U_1 * vec_1 + w3 * U_2 * vec_2 
     individual.weights = individual.weights + individual.velocities
-    individual.check_and_alter_boundaries()
+
 
 if __name__ ==  '__main__':
-
+    global tau, tau_2, beta, stddev_lim, ALPHA, bosses
     hidden = 10
-    population_size = 4
-    generations = 5
-    bosses = [1,2,3]
+    population_size = 100
+    generations = 4
+    
+    swarm_mutation_active = False
+    differential_evolution_active = True
 
     n_vars = (20+1)*hidden + (hidden + 1)*5 
 
+    bosses = [1,2,3,4]
+    tournament = 1
+    max_fitness = -1000
     upper_bound = 1
     lower_bound = -1
-    global_best = -1000
-
-    for _ in range(10):
+    velocity = 1.2
+    scaling_factor = 1.5 #between 0 and 1
+    for q in range(1):
         unique_runcode = random.random()
+
+ 
         max_fitness_per_gen = []
         average = []
-        pop = initiate_population(population_size, n_vars, lower_bound, upper_bound)
+        pop = initiate_population(population_size, n_vars, lower_bound, upper_bound, velocity)
+        [indi.evaluate_multi(bosses) for indi in pop]
+        
+        
+
+            
 
         stats_per_gen = []
-
         for generation in range(generations):
         
-            for individual in pop:
-                individual.evaluate_multi(bosses)
+        
+            if swarm_mutation_active:
+                for individual in pop:
+                    individual.evaluate_multi(bosses)
+                    with open("best_multi.txt",'r') as f:
+                        max_fitness =  float(f.readline().split(',')[1])
+    
+                        
+                    if individual.multi_fitness > max_fitness:
+                        max_fitness = individual.multi_fitness
+                        individual.log()
+                fitness_list = np.array([individual.multi_fitness for individual in pop])
+#
+            if differential_evolution_active:
+                fitness_list = np.array([individual.multi_fitness for individual in pop])
+                pop = differential_evolution(pop)
+                    
 
-            fitness_list = np.array([individual.multi_fitness for individual in pop])
-            if max(fitness_list) > global_best:
-                index_best = np.argmax(fitness_list)
-                best_individual = pop[index_best]
 
-            for individual in pop:
-                mutate_swarm(individual, best_individual)
-
-            save_pop2(pop)
+            print('New generation of degenerates eradicated.')
+            max_fitness_per_gen.append(max(fitness_list))
+            average.append(np.mean(fitness_list))
+            stats_per_gen.append([np.mean(fitness_list), np.max(fitness_list), np.min(fitness_list)])
 
         for i in range(len(stats_per_gen)):
             print("GEN {}, max = {:.2f}, min = {:.2f}, mean = {:.2f}".format(i, stats_per_gen[i][1], stats_per_gen[i][2], stats_per_gen[i][0]))
             
         print(max_fitness_per_gen)
-# individual = Individual(np.random.rand(100), np.random.rand(100))
-# global_best = np.random.rand(100)
-# mutate_swarm(individual, global_best)
+        
+        
+individual = Individual(np.random.rand(100), np.random.rand(100))
+global_best = np.random.rand(100)
+mutate_swarm(individual, global_best)
