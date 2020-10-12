@@ -148,27 +148,6 @@ def read_data(file_path):
 def mutate_swarm(individual, global_best):
 
     # Generate random matrices
-    '''
-    U_1 = []
-    U_2 = []
-    U_1_sum = U_2_sum = 0
-
-    for i in range(len(individual.weights)):
-        U_i_1 = np.random.random()
-        U_i_2 = np.random.random()
-        U_1.append(U_i_1)
-        U_2.append(U_i_2)
-        U_1_sum += U_i_1
-        U_2_sum += U_i_2
-    
-    U_1 = np.diagflat(np.array(U_1)/U_1_sum)
-    U_2 = np.diagflat(np.array(U_2)/U_2_sum)
-    
-    # Define weights
-    w1 = 0.4
-    w2 = 0.3
-    w3 = 0.3
-    '''
     U_1 = np.random.random() * (1/2 + np.log(2))
     U_2 = np.random.random() * (1/2 + np.log(2))
 
@@ -196,7 +175,7 @@ if __name__ ==  '__main__':
     lower_bound = -1
     global_best = -1000
 
-    for _ in range(1):
+    for _ in range(10):
         unique_runcode = random.random()
         max_fitness_per_gen = []
         average = []
